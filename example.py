@@ -11,12 +11,9 @@ t3nom = 6*fsgc.ureg.mm
 windLoad = 1.436*fsgc.ureg.kPa
 
 # Plys
-ply1 = fsgc.GlassPly(t1nom,"FT")
-ply2 = fsgc.GlassPly(t2nom,"FT")
-ply3 = fsgc.GlassPly(t3nom,"FT")
-
-# Interlayer
-#interlayer = fsgc.InterLayer(0.89*fsgc.ureg.mm, 0.281*fsgc.ureg.MPa)
+ply1 = fsgc.GlassPly.from_nominal_thickness(t1nom,"FT")
+ply2 = fsgc.GlassPly.from_nominal_thickness(t2nom,"FT")
+ply3 = fsgc.GlassPly.from_nominal_thickness(t3nom,"FT")
 
 # Package specifying the model type
 package1 = fsgc.MonolithicMethod([ply1, ply2])
