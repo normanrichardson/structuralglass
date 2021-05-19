@@ -7,6 +7,22 @@ ureg = pint.UnitRegistry()
 # Add psf
 ureg.define('pound_force_per_square_foot = pound * gravity / foot ** 2 = psf')
 
+# Lookup for nominal thickness to minimal allowable thickness
+lookupT = {
+            2.5: 2.16,
+            2.7: 2.59,
+            3  : 2.92,
+            4  : 3.78,
+            5  : 4.57,
+            6  : 5.56,
+            8  : 7.42,
+            10 : 9.02,
+            12: 11.91,
+            16: 15.09,
+            19: 18.26,
+            22: 21.44
+}
+
 class GlassPly:
     """
         A class to represent a glass ply, its thinkess (nominal and minimum allowable) and mechanical properties.
@@ -28,36 +44,32 @@ class GlassPly:
         __init__(t_nom, glassType):
             Constructor for a ply with nominal thickness
     """
-    # Lookup for nominal thickness to minimal allowable thickness
-    __lookupT = {
-                2.5: 2.16,
-                2.7: 2.59,
-                3  : 2.92,
-                4  : 3.78,
-                5  : 4.57,
-                6  : 5.56,
-                8  : 7.42,
-                10 : 9.02,
-                12: 11.91,
-                16: 15.09,
-                19: 18.26,
-                22: 21.44
-               }
-    def __init__(self, t_nom, glassType):
+    def __init__(self, t_min, glassType, t_nom=None):
         """
             Args:
                 t_nom (Quantity [length]): nominal thickness
                 glassType (str): Glass type [AN, HS, FT]
         """
         self.E = 72 * ureg.GPa
+        self.t_min = t_min
         self.t_nom = t_nom
+        self.glassType = glassType
+    
+    @classmethod
+    def from_nominal_thickness(cls, t_nom, glassType):
         try:
-            self.t_min = self.__lookupT[t_nom.to(ureg.mm).magnitude] * ureg.mm
+            t_min = lookupT[t_nom.to(ureg.mm).magnitude] * ureg.mm
         except KeyError:
             raise ValueError("Could not find the nominal tickness of {0} in the nominal thickness lookup.".format(t_nom))
         except AttributeError:
             raise ValueError("The nominal thickness must be defined in pint length units. {0} provided.".format(type(t_nom)))
-        self.glassType = glassType
+        return cls(t_min,glassType,t_nom)
+    
+    @classmethod
+    def from_actual_thickness(cls, t_act, glassType):
+        return cls(t_act,glassType, t_act)
+
+    
 
 class InterLayer:
     """
