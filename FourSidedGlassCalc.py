@@ -67,7 +67,7 @@ class GlassPly:
     
     @classmethod
     def from_actual_thickness(cls, t_act, glassType):
-        return cls(t_act,glassType, t_act)
+        return cls(t_act, glassType)
 
     
 
