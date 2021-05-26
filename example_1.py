@@ -1,3 +1,6 @@
+
+# Example from NCSEA Engineering Structural Glass Design Guide chapter 8 example 5
+
 import FourSidedGlassCalc as fsgc
 
 # Plate dimensions
@@ -14,9 +17,6 @@ windLoad = 1.436*fsgc.ureg.kPa
 ply1 = fsgc.GlassPly(t1nom,"FT")
 ply2 = fsgc.GlassPly(t2nom,"FT")
 ply3 = fsgc.GlassPly(t3nom,"FT")
-
-# Interlayer
-#interlayer = fsgc.InterLayer(0.89*fsgc.ureg.mm, 0.281*fsgc.ureg.MPa)
 
 # Package specifying the model type
 package1 = fsgc.MonolithicMethod([ply1, ply2])

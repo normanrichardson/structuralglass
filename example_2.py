@@ -1,5 +1,5 @@
 
-# Example from NCSEA Engineering Structural Glass Design Guide chapter  8 example 3
+# Example from NCSEA Engineering Structural Glass Design Guide chapter 8 example 3
 
 import FourSidedGlassCalc as fsgc
 
