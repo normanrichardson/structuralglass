@@ -63,6 +63,8 @@ class GlassPly:
             raise ValueError("Could not find the nominal tickness of {0} in the nominal thickness lookup.".format(t_nom))
         except AttributeError:
             raise ValueError("The nominal thickness must be defined in pint length units. {0} provided.".format(type(t_nom)))
+        except pint.DimensionalityError:
+            raise ValueError("The nominal thickness must be defined in pint length units. {0} provided.".format(t_nom.dimensionality))
         return cls(t_min,glassType,t_nom)
     
     @classmethod
