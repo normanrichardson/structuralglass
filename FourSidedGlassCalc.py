@@ -388,7 +388,7 @@ class GlassPanel:
         self.stress = {}
         self.deflection = {}
         for lite in self.buildup:
-            for ply, h_efs in lite.h_efs.iteritems():
+            for ply, h_efs in lite.h_efs.items():
                 self.stress[ply] = (r4s.beta * self.windLoad * self.LSF[lite] * self.b**2 / (h_efs**2)).to('MPa')
 
             self.deflection[lite] =(r4s.alpha * self.windLoad * self.LSF[lite] * self.b**4 / (E_glass * lite.h_efw**3)).to('mm') 
