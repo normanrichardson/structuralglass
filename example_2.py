@@ -11,11 +11,11 @@ t2nom = 12*fsgc.ureg.mm
 # Interlayer PVB at 30degC for 1 day load duration
 G_pvb = 0.281*fsgc.ureg.MPa
 t_pvb = 0.89*fsgc.ureg.mm
-interlayer = fsgc.InterLayer(0.89*fsgc.ureg.mm, 0.281*fsgc.ureg.MPa)
+interlayer = fsgc.InterLayer(t_pvb, G_pvb)
 
 # Plys
-ply1 = fsgc.GlassPly(t1nom,"FT")
-ply2 = fsgc.GlassPly(t2nom,"FT")
+ply1 = fsgc.GlassPly.from_nominal_thickness(t1nom,"FT")
+ply2 = fsgc.GlassPly.from_nominal_thickness(t2nom,"FT")
 
 # Package specifying the model type
 package = fsgc.ShearTransferCoefMethod([ply1,interlayer, ply2],a)
