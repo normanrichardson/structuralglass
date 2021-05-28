@@ -50,7 +50,7 @@ class GlassPly:
                 t_nom (Quantity [length]): nominal thickness
                 glassType (str): Glass type [AN, HS, FT]
         """
-        self.E = 72 * ureg.GPa
+        self.E = 71.7 * ureg.GPa
         self.t_min = t_min
         self.t_nom = t_nom
         self.glassType = glassType
@@ -70,8 +70,6 @@ class GlassPly:
     @classmethod
     def from_actual_thickness(cls, t_act, glassType):
         return cls(t_act, glassType)
-
-    
 
 class InterLayer:
     """
@@ -290,10 +288,10 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         h_s1 = h_s*h_1/(h_1+h_2)
         h_s2 = h_s*h_2/(h_1+h_2)
         I_s = h_1*h_s2**2 + h_2*h_s1**2
-        Gamma = 1.0 / (1.0 + self.beta*E_glass*I_s*h_v / (G_interlayer * h_s**2 * self.panelMinLen**2))
-        self.h_efw = (h_1**3 + h_2**3 + 12*Gamma*I_s)**(1/3.0)
-        self.h_efs [self.ply[0]] = (self.h_efw**3/(h_1+2*Gamma*h_s2))**(0.5)
-        self.h_efs [self.ply[2]] = (self.h_efw**3/(h_2+2*Gamma*h_s1))**(0.5)
+        self.Gamma = 1.0 / (1.0 + self.beta*E_glass*I_s*h_v / (G_interlayer * h_s**2 * self.panelMinLen**2))
+        self.h_efw = (h_1**3 + h_2**3 + 12*self.Gamma*I_s)**(1/3.0)
+        self.h_efs [self.ply[0]] = (self.h_efw**3/(h_1+2*self.Gamma*h_s2))**(0.5)
+        self.h_efs [self.ply[2]] = (self.h_efw**3/(h_2+2*self.Gamma*h_s1))**(0.5)
 
 class Roarks4side:
     """
@@ -317,8 +315,8 @@ class Roarks4side:
     """
     def __init__(self, ratio):
         """
-        Args:
-            ratio (float): the ratio of the largest dimension to the smallest dimension (rectangular panel)
+            Args:
+                ratio (float): the ratio of the largest dimension to the smallest dimension (rectangular panel)
         """
         r = [1, 1.2, 1.4, 1.6, 1.8, 2, 3, 4, 5]
         beta = [0.2874, 0.3762, 0.453, 0.5172, 0.5688, 0.6102, 0.7134, 0.741, 0.7476, 0.75]
