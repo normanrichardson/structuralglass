@@ -11,7 +11,7 @@ t2nom = 10*fsgc.ureg.mm
 # Interlayer PVB at 30degC for 1 day load duration
 G_pvb = 0.44*fsgc.ureg.MPa
 t_pvb = 1.52*fsgc.ureg.mm
-interlayer = fsgc.InterLayer(0.89*fsgc.ureg.mm, 0.281*fsgc.ureg.MPa)
+interlayer = fsgc.InterLayer(t_pvb, G_pvb)
 
 # Plys
 ply1 = fsgc.GlassPly.from_nominal_thickness(t1nom,"FT")
