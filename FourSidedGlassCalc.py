@@ -8,9 +8,8 @@ ureg = pint.UnitRegistry()
 ureg.define('pound_force_per_square_foot = pound * gravity / foot ** 2 = psf')
 
 # Lookup for nominal thickness to minimal allowable thickness
-lookupT = {
+t_min_lookup_metric = {
             2.5: 2.16,
-            2.7: 2.59,
             3  : 2.92,
             4  : 3.78,
             5  : 4.57,
@@ -21,6 +20,20 @@ lookupT = {
             16: 15.09,
             19: 18.26,
             22: 21.44
+}
+
+t_min_lookup_imperial = {
+            0.09375: 2.16,
+            0.125  : 2.92,
+            0.15625: 3.78,
+            0.1875 : 4.57,
+            0.25   : 5.56,
+            0.3125 : 7.42,
+            0.375  : 9.02,
+            0.5    : 11.91,
+            0.625  : 15.09,
+            0.75   : 18.26,
+            0.875  : 21.44
 }
 
 class GlassPly:
@@ -58,9 +71,12 @@ class GlassPly:
     @classmethod
     def from_nominal_thickness(cls, t_nom, glassType):
         try:
-            t_min = lookupT[t_nom.to(ureg.mm).magnitude] * ureg.mm
+            t_min = t_min_lookup_metric[t_nom.to(ureg.mm).magnitude] * ureg.mm
         except KeyError:
-            raise ValueError("Could not find the nominal tickness of {0} in the nominal thickness lookup.".format(t_nom))
+            try:
+                t_min = t_min_lookup_imperial[t_nom.to(ureg.in).magnitude] * ureg.mm
+            except KeyError:
+                raise ValueError("Could not find the nominal tickness of {0} in the nominal thickness lookup.".format(t_nom))
         except AttributeError:
             raise ValueError("The nominal thickness must be defined in pint length units. {0} provided.".format(type(t_nom)))
         except pint.DimensionalityError:
