@@ -4,7 +4,7 @@ import unittest
 class TestGlassPly(unittest.TestCase):
     def test_from_nominal_thickness(self):
         tnom = 8*fsgc.ureg.mm
-        tmin = fsgc.lookupT[tnom.to(fsgc.ureg.mm).magnitude]*fsgc.ureg.mm
+        tmin = fsgc.t_min_lookup_metric[tnom.to(fsgc.ureg.mm).magnitude]*fsgc.ureg.mm
         glassType = "FT"
         ply = fsgc.GlassPly.from_nominal_thickness(tnom,glassType)
         self.assertIsInstance(ply,fsgc.GlassPly)
@@ -63,13 +63,13 @@ class TestMonolithicMethod(unittest.TestCase):
         self.buildup = [fsgc.MonolithicMethod(package)]
     
     def test_h_efw(self):
-        t_act = (fsgc.lookupT[self.t1nom.to(fsgc.ureg.mm).magnitude] + \
-        fsgc.lookupT[self.t2nom.to(fsgc.ureg.mm).magnitude])*fsgc.ureg.mm
+        t_act = (fsgc.t_min_lookup_metric[self.t1nom.to(fsgc.ureg.mm).magnitude] + \
+        fsgc.t_min_lookup_metric[self.t2nom.to(fsgc.ureg.mm).magnitude])*fsgc.ureg.mm
         self.assertAlmostEqual(self.buildup[0].h_efw, t_act)
 
     def test_h_efs(self):
-        t_act = (fsgc.lookupT[self.t1nom.to(fsgc.ureg.mm).magnitude] + \
-        fsgc.lookupT[self.t2nom.to(fsgc.ureg.mm).magnitude])*fsgc.ureg.mm
+        t_act = (fsgc.t_min_lookup_metric[self.t1nom.to(fsgc.ureg.mm).magnitude] + \
+        fsgc.t_min_lookup_metric[self.t2nom.to(fsgc.ureg.mm).magnitude])*fsgc.ureg.mm
         self.assertAlmostEqual(self.buildup[0].h_efs[self.ply1], t_act)
 
 class TestNonCompositeMethod(unittest.TestCase):
