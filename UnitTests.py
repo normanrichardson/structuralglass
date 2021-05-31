@@ -2,9 +2,20 @@ import FourSidedGlassCalc as fsgc
 import unittest
 
 class TestGlassPly(unittest.TestCase):
-    def test_from_nominal_thickness(self):
+    def test_from_nominal_thickness_metric(self):
         tnom = 8*fsgc.ureg.mm
         tmin = fsgc.t_min_lookup_metric[tnom.to(fsgc.ureg.mm).magnitude]*fsgc.ureg.mm
+        glassType = "FT"
+        ply = fsgc.GlassPly.from_nominal_thickness(tnom,glassType)
+        self.assertIsInstance(ply,fsgc.GlassPly)
+        self.assertEqual(ply.t_nom, tnom)
+        self.assertEqual(ply.t_min, tmin)
+        self.assertEqual(ply.E, 71.7 * fsgc.ureg.GPa)
+        self.assertEqual(ply.glassType, glassType)
+
+    def test_from_nominal_thickness_imperial(self):
+        tnom = 3/8*fsgc.ureg.inch
+        tmin = fsgc.t_min_lookup_imperial[tnom.to(fsgc.ureg.inch).magnitude]*fsgc.ureg.mm
         glassType = "FT"
         ply = fsgc.GlassPly.from_nominal_thickness(tnom,glassType)
         self.assertIsInstance(ply,fsgc.GlassPly)
