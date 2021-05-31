@@ -74,7 +74,7 @@ class GlassPly:
             t_min = t_min_lookup_metric[t_nom.to(ureg.mm).magnitude] * ureg.mm
         except KeyError:
             try:
-                t_min = t_min_lookup_imperial[t_nom.to(ureg.in).magnitude] * ureg.mm
+                t_min = t_min_lookup_imperial[t_nom.to(ureg.inch).magnitude] * ureg.mm
             except KeyError:
                 raise ValueError("Could not find the nominal tickness of {0} in the nominal thickness lookup.".format(t_nom))
         except AttributeError:
