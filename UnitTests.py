@@ -1,4 +1,5 @@
 import FourSidedGlassCalc as fsgc
+import GlassTypes as gt
 import unittest
 
 class TestGlassPly(unittest.TestCase):
@@ -145,6 +146,57 @@ class TestShearTransferCoefMethod(unittest.TestCase):
         with self.assertRaises(AssertionError) as cm:
             buildup = [fsgc.ShearTransferCoefMethod(pac_invalid_3,self.a)]
         self.assertEqual(str(cm.exception), "Method is only valid for 2 ply glass laminates")
+
+
+class TestAnnealedGlassType(unittest.TestCase):
+    def setUp(self) -> None:
+        self.an = gt.Annealed()
+    def test_prob_breakage_factor(self):
+        self.assertAlmostEqual(self.an.prob_breakage_factor(1/1000), 0.681114447,4)
+        self.assertAlmostEqual(self.an.prob_breakage_factor(5/1000), 0.9218781646,4)
+        self.assertAlmostEqual(self.an.prob_breakage_factor(8/1000), 1,4)
+        self.assertAlmostEqual(self.an.prob_breakage_factor(10/1000), 1.038646695,4)
+    def test_load_duration_factor(self):
+        self.assertAlmostEqual(self.an.load_duration_factor(10*fsgc.ureg.year), 0.315,3)
+        self.assertAlmostEqual(self.an.load_duration_factor(12*fsgc.ureg.hour), 0.550,3)
+    def test_surf_factors(self):
+        self.assertAlmostEqual(self.an.surf_factors["None"], 1)
+
+class TestHeatStrengthenedGlassType(unittest.TestCase):
+    def setUp(self) -> None:
+        self.hs = gt.HeatStrengthened()
+    def test_prob_breakage_factor(self):
+        self.assertAlmostEqual(self.hs.prob_breakage_factor(1/1000), 0.8399834341,4)
+        self.assertAlmostEqual(self.hs.prob_breakage_factor(3/1000), 0.9204133016,4)
+        self.assertAlmostEqual(self.hs.prob_breakage_factor(8/1000), 1,4)
+        self.assertAlmostEqual(self.hs.prob_breakage_factor(9/1000), 1.010169699,4)
+    def test_load_duration_factor(self):
+        self.assertAlmostEqual(self.hs.load_duration_factor(10*fsgc.ureg.year), 0.558,3)
+        self.assertAlmostEqual(self.hs.load_duration_factor(12*fsgc.ureg.hour), 0.739,3)
+    def test_surf_factors(self):
+        self.assertAlmostEqual(self.hs.surf_factors["Fritted"], 1)
+
+class TestFullyTemperedGlassType(unittest.TestCase):
+    def setUp(self) -> None:
+        self.ft = gt.FullyTempered()
+    def test_prob_breakage_factor(self):
+        self.assertAlmostEqual(self.ft.prob_breakage_factor(1/1000), 0.9102486076,4)
+        self.assertAlmostEqual(self.ft.prob_breakage_factor(4/1000), 0.9679689847,4)
+        self.assertAlmostEqual(self.ft.prob_breakage_factor(8/1000), 1,4)
+        self.assertAlmostEqual(self.ft.prob_breakage_factor(10/1000), 1.01087724,4)
+    def test_prob_breakage_factor_in_NCSEA(self):
+        # NCSEA uses a coef of var of 0.2 irrespective of the glass type
+        self.ft.coef_variation = 0.2
+        self.assertAlmostEqual(self.ft.prob_breakage_factor(1/1000), 0.7370555907,4)
+        self.assertAlmostEqual(self.ft.prob_breakage_factor(4/1000), 0.9061588218,4)
+        self.assertAlmostEqual(self.ft.prob_breakage_factor(8/1000), 1,4)
+        self.assertAlmostEqual(self.ft.prob_breakage_factor(10/1000), 1.031867021,4)
+    def test_load_duration_factor(self):
+        self.assertAlmostEqual(self.ft.load_duration_factor(10*fsgc.ureg.year), 0.678,3)
+        self.assertAlmostEqual(self.ft.load_duration_factor(12*fsgc.ureg.hour), 0.817,3)
+    def test_surf_factors(self):
+        self.assertAlmostEqual(self.ft.surf_factors["Acid etching"], 0.5)
+        
 
 if __name__ == '__main__':
     unittest.main()
