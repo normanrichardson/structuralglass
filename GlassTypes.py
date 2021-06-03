@@ -29,7 +29,7 @@ class Annealed(GlassType):
         coef_variation = 0.22
         surf_factors = {
             "None" : 1,
-            "Fritted" : 0.5,
+            "Fritted" : 1,
             "Acid etching" : 0.5,
             "Sandblasting" : 0.5
         }
@@ -43,7 +43,7 @@ class HeatStrengthened(GlassType):
         coef_variation = 0.15
         surf_factors = {
             "None" : 1,
-            "Fritted" : 0.5,
+            "Fritted" : 1,
             "Acid etching" : 0.5,
             "Sandblasting" : 0.5
         }
@@ -57,7 +57,7 @@ class FullyTempered(GlassType):
         coef_variation = 0.1
         surf_factors = {
             "None" : 1,
-            "Fritted" : 0.5,
+            "Fritted" : 1,
             "Acid etching" : 0.5,
             "Sandblasting" : 0.5
         }
