@@ -1,3 +1,4 @@
 reference/*
 *.pyc
 .vscode/*
+todo.txt
