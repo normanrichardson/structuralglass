@@ -13,7 +13,7 @@ class GlassType:
     
     @fsgc.ureg.check(None, '[time]')
     def load_duration_factor(self, time = 3*fsgc.ureg.sec):
-        return 1 / ((time.to(fsgc.ureg.sec).magnitude/3)**(1/self.duration_factor))
+        return 1 / ((time/(3*fsgc.ureg.sec))**(1/self.duration_factor))
     def design_factor(self, ratio):
         return 1 / ( 1 - self.coef_variation*ss.norm.ppf(1-ratio) )
     def prob_breakage_factor(self, ratio):

@@ -1,5 +1,6 @@
 import abc
 import pint
+import itertools
 
 # Create the default pint unit registary
 ureg = pint.UnitRegistry()
@@ -7,7 +8,7 @@ ureg = pint.UnitRegistry()
 # Add psf
 ureg.define('pound_force_per_square_foot = pound * gravity / foot ** 2 = psf')
 
-# Lookup for nominal thickness to minimal allowable thickness
+# Lookup for nominal thickness to minimal allowable thickness in metric
 t_min_lookup_metric = {
             2.5: 2.16,
             3  : 2.92,
@@ -22,6 +23,7 @@ t_min_lookup_metric = {
             22: 21.44
 }
 
+# Lookup for nominal thickness to minimal allowable thickness in imperial
 t_min_lookup_imperial = {
             0.09375: 2.16,
             0.125  : 2.92,
@@ -142,8 +144,8 @@ class GlassLiteEquiv:
             Args:
                 ply (List[GlassPly and InterLayer]): The list of glass layers and interlayers that form a laminate.
         """
-        self.h_efw = 0.0 * ureg.mm
-        self.h_efs = {}
+        self.h_efw = None
+        self.h_efs = None
         self.ply = ply
 
     @abc.abstractmethod
@@ -190,10 +192,8 @@ class MonolithicMethod(GlassLiteEquiv):
         """
             Method that calculates the effective thicknesses.
         """
-        tmp = sum((ii.t_min for ii in self.ply))
-        self.h_efw = tmp
-        for ii in self.ply:
-            self.h_efs[ii] = tmp
+        self.h_efw = sum((ii.t_min for ii in self.ply))
+        self.h_efs = dict(zip(self.ply,itertools.repeat(self.h_efw,len(self.ply))))
 
 class NonCompositeMethod(GlassLiteEquiv):
     """
@@ -233,15 +233,9 @@ class NonCompositeMethod(GlassLiteEquiv):
         """
             Method that calculates the effective thicknesses.
         """
-        tmp1 = 0.0 * (ureg.mm)**2
-        tmp2 = 0.0 * (ureg.mm)**3
-        for ii in self.ply:
-            tmp1 += (ii.t_min)**2
-            tmp2 += (ii.t_min)**3
-        tmp3 = tmp1**(0.5)
-        for ii in self.ply:
-            self.h_efs[ii] = tmp3
-        self.h_efw = tmp2**(1/3.0)
+        func = lambda n: sum(ii.t_min**n for ii in self.ply)**(1/n)
+        self.h_efs = dict(zip(self.ply, itertools.repeat(func(2),len(self.ply))))
+        self.h_efw = func(3)
 
 class ShearTransferCoefMethod(GlassLiteEquiv):
     """
@@ -306,6 +300,7 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         I_s = h_1*h_s2**2 + h_2*h_s1**2
         self.Gamma = 1.0 / (1.0 + self.beta*E_glass*I_s*h_v / (G_interlayer * h_s**2 * self.panelMinLen**2))
         self.h_efw = (h_1**3 + h_2**3 + 12*self.Gamma*I_s)**(1/3.0)
+        self.h_efs = {}
         self.h_efs [self.ply[0]] = (self.h_efw**3/(h_1+2*self.Gamma*h_s2))**(0.5)
         self.h_efs [self.ply[2]] = (self.h_efw**3/(h_2+2*self.Gamma*h_s1))**(0.5)
 
@@ -391,13 +386,12 @@ class GlassPanel:
         else:
             self.b, self.a = height, width
 
-        E_glass = 72 * ureg.GPa
+        E_glass = 71.7 * ureg.GPa
         r4s = Roarks4side((self.a/self.b).magnitude)
 
         # Determine the load share factor
-        s = map(lambda x: (x.h_efw)**3 , self.buildup)
-        s = sum(s)
-        self.LSF = dict(zip(self.buildup,map(lambda x: x.h_efw**3/s , self.buildup)))
+        denom = sum(map(lambda x: (x.h_efw)**3 , self.buildup))
+        self.LSF = dict(zip(self.buildup,map(lambda x: x.h_efw**3/denom , self.buildup)))
 
         self.stress = {}
         self.deflection = {}
