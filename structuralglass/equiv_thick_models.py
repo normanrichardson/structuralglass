@@ -1,6 +1,7 @@
 import abc
 import itertools
 from . import ureg, Q_
+from .materials import GlassPly, InterLayer
 
 class GlassLiteEquiv:
     """
