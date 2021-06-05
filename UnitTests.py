@@ -1,6 +1,7 @@
 import FourSidedGlassCalc as fsgc
 import GlassTypes as gt
 import unittest
+import pint
 
 class TestGlassPly(unittest.TestCase):
     def test_from_nominal_thickness_metric(self):
@@ -45,16 +46,16 @@ class TestGlassPly(unittest.TestCase):
     def test_invalid_no_unit_from_nominal_thickness(self):
         tnom = 8
         glassType = "FT"
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(pint.DimensionalityError) as cm:
             ply = fsgc.GlassPly.from_nominal_thickness(tnom,glassType)
-        self.assertEqual(str(cm.exception), "The nominal thickness must be defined in pint length units. <class 'int'> provided.")
+        self.assertEqual(str(cm.exception), "Cannot convert from '8' (dimensionless) to 'a quantity of' ([length])")
 
     def test_invalid_unit_from_nominal_thickness(self):
         tnom = 8*fsgc.ureg.mm**2
         glassType = "FT"
-        with self.assertRaises(ValueError) as cm:
+        with self.assertRaises(pint.DimensionalityError) as cm:
             ply = fsgc.GlassPly.from_nominal_thickness(tnom,glassType)
-        self.assertEqual(str(cm.exception), "The nominal thickness must be defined in pint length units. [length] ** 2 provided.")
+        self.assertEqual(str(cm.exception), "Cannot convert from '8 millimeter ** 2' ([length] ** 2) to 'a quantity of' ([length])")
 
 class TestInterLayer(unittest.TestCase):
     def test_constructor(self):

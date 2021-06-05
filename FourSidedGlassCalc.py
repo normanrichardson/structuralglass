@@ -71,6 +71,7 @@ class GlassPly:
         self.glassType = glassType
     
     @classmethod
+    @ureg.check(None, '[length]', None)
     def from_nominal_thickness(cls, t_nom, glassType):
         try:
             t_min = t_min_lookup_metric[t_nom.to(ureg.mm).magnitude] * ureg.mm
@@ -79,10 +80,6 @@ class GlassPly:
                 t_min = t_min_lookup_imperial[t_nom.to(ureg.inch).magnitude] * ureg.mm
             except KeyError:
                 raise ValueError("Could not find the nominal tickness of {0} in the nominal thickness lookup.".format(t_nom))
-        except AttributeError:
-            raise ValueError("The nominal thickness must be defined in pint length units. {0} provided.".format(type(t_nom)))
-        except pint.DimensionalityError:
-            raise ValueError("The nominal thickness must be defined in pint length units. {0} provided.".format(t_nom.dimensionality))
         return cls(t_min,glassType,t_nom)
     
     @classmethod
