@@ -1,5 +1,5 @@
+from . import ureg, Q_
 import abc
-import FourSidedGlassCalc as fsgc
 import scipy.stats as ss
 
 class GlassType:
@@ -23,7 +23,7 @@ class GlassType:
         e.g. "Acid etching" can reduce the allowable stress by 0.5  
     Methods
     -------
-    load_duration_factor(time = 3*fsgc.ureg.sec)
+    load_duration_factor(time = 3*ureg.sec)
         Determines the load duration factor for the glass type.
     design_factor(ratio)
         Determines the design factor for the glass type based on a given failure 
@@ -61,20 +61,20 @@ class GlassType:
         self.coef_variation = coef_variation
         self.surf_factors = surf_factors
     
-    @fsgc.ureg.check(None, '[time]')
-    def load_duration_factor(self, time = 3*fsgc.ureg.sec):
+    @ureg.check(None, '[time]')
+    def load_duration_factor(self, time = 3*ureg.sec):
         """Determines the load duration factor for the glass type.
 
         Parameters
         ----------
         time : Quantity [time], optional
-            The load duration, by default 3*fsgc.ureg.sec
+            The load duration, by default 3*ureg.sec
         Returns
         -------
         float
             Load duration factor to apply to the base stress.
         """         
-        return 1 / ((time/(3*fsgc.ureg.sec))**(1/self.duration_factor))
+        return 1 / ((time/(3*ureg.sec))**(1/self.duration_factor))
     def design_factor(self, ratio):
         """Determines the design factor for the glass type based on a given failure 
         ratio (e.g. 1/1000). This can be used to convert the average breaking stress
@@ -125,8 +125,8 @@ class Annealed(GlassType):
     """Annealed glass type.
     """
     def __init__(self):
-        stress_surface = 23.3 * fsgc.ureg.MPa
-        stress_edge    = 18.3 * fsgc.ureg.MPa
+        stress_surface = 23.3 * ureg.MPa
+        stress_edge    = 18.3 * ureg.MPa
         duration_factor = 16
         coef_variation = 0.22
         surf_factors = {
@@ -141,8 +141,8 @@ class HeatStrengthened(GlassType):
     """Heat strengthened glass type.
     """
     def __init__(self):
-        stress_surface = 46.6 * fsgc.ureg.MPa
-        stress_edge    = 36.5 * fsgc.ureg.MPa
+        stress_surface = 46.6 * ureg.MPa
+        stress_edge    = 36.5 * ureg.MPa
         duration_factor = 31.7
         coef_variation = 0.15
         surf_factors = {
@@ -157,8 +157,8 @@ class FullyTempered(GlassType):
     """Fully tempered glass type.
     """
     def __init__(self):
-        stress_surface = 93.1 * fsgc.ureg.MPa
-        stress_edge    = 73.0 * fsgc.ureg.MPa
+        stress_surface = 93.1 * ureg.MPa
+        stress_edge    = 73.0 * ureg.MPa
         duration_factor = 47.5
         coef_variation = 0.1
         surf_factors = {
