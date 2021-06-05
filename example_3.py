@@ -2,7 +2,7 @@
 # Example from E1300-16 example 13
 
 from structuralglass import ureg, Q_
-import structuralglass.materials as mat
+import structuralglass.layers as lay
 import structuralglass.equiv_thick_models as et
 
 # Plate dimensions
@@ -13,11 +13,11 @@ t2nom = 10*ureg.mm
 # Interlayer PVB at 30degC for 1 day load duration
 G_pvb = 0.44*ureg.MPa
 t_pvb = 1.52*ureg.mm
-interlayer = mat.InterLayer(t_pvb, G_pvb)
+interlayer = lay.InterLayer(t_pvb, G_pvb)
 
 # Plys
-ply1 = mat.GlassPly.from_nominal_thickness(t1nom,"FT")
-ply2 = mat.GlassPly.from_nominal_thickness(t2nom,"FT")
+ply1 = lay.GlassPly.from_nominal_thickness(t1nom,"FT")
+ply2 = lay.GlassPly.from_nominal_thickness(t2nom,"FT")
 
 # Package specifying the model type
 package = et.ShearTransferCoefMethod([ply1,interlayer, ply2],a)
