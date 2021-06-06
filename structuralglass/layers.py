@@ -82,7 +82,7 @@ class GlassPly:
 class InterLayer:
     """
         A class to represent a glass interlayer(e.g. PVB or SG), and its mechanical properties. 
-        Rate dependent properties are not considered here.
+        Rate dependent properties can be considered via the use of a product table or registered product name
 
         ...
 
@@ -91,16 +91,42 @@ class InterLayer:
         t : Quantity [length]
             thickness
         G : Quantity [pressure]
-            Shear modulus for the case of static interlayer
-        G_table: Dict[(Quantity [temperature],Quantity [time]), Quantity [pressure]]
-            Shear modulus table for the case of using an interlayer product table.
-            The dictionary keys are (temperature, duration) and associated shear modulus
+            Shear modulus
+        temperature: Quantity [temperature]
+            The load case temperature, if a product table is used.
+        duration:
+            The load case duration, if a product table is used.
+        table_interpolation:
+            The interpolation method, if a product table is used.
+
         Methods
         -------
-        __init__(t, G):
-            Constructor for an interlayer.
+        from_product_table(t, product_name):
+            Class method to creating a interlayer with a registered product name
+        from_static(t, G):
+            Class method to creating a interlayer with a static shear modulus value
     """
     def __init__(self, t, **kwargs):
+        """[summary]
+
+        Parameters
+        ----------
+        t : [type]
+            [description]
+        G : Quantity [pressure]
+            Shear modulus for the case of a static layer, do not provide a G_table.
+        G_table: Dict[(Quantity [temperature],Quantity [time]), Quantity [pressure]]
+            Shear modulus table for the case of using an interlayer product table.
+            The dictionary keys are (temperature, duration) and associated shear modulus.
+            Do not provide a G value.
+
+        Raises
+        ------
+        ValueError
+            If neither G nor G_table are provided.
+        ValueError
+            If both G and G_table are provided.
+        """        
         self.t = t
         G_tmp = kwargs.get('G',None)
         G_table_tmp = kwargs.get('G_table',None)
@@ -117,36 +143,115 @@ class InterLayer:
 
     @classmethod
     def from_product_table(cls, t, product_name):
+        """Class method for an interlayer with a product table.
+
+        Parameters
+        ----------
+        t : Quantity [length]
+            The thickness of the interlayer.
+        product_name : sting
+            The registred name of the product.
+
+        Returns
+        -------
+        Interlayer
+        """
         interLayer_registry[product_name]
         return cls(t,G_table = interLayer_registry[product_name])
+    
     @classmethod
     def from_static(cls, t, G):
+        """Class method for an interlayer with a static shear modulus.
+
+        Parameters
+        ----------
+        t : Quantity [length]
+            The thickness of the interlayer.
+        G : Quantity [pressure]
+            The shear modulus.
+
+        Returns
+        -------
+        Interlayer
+        """
         return cls(t,G=G)
 
     @property
     def temperature(self):
+        """Get the temperature
+
+        Returns
+        -------
+        Quantity [temperature]
+
+        Raises
+        ------
+        ValueError
+            If no product table is provided.
+        """
         if self.G_table is None: raise ValueError("No product table provided. Static case being used.")
         return self._temperature
 
     @temperature.setter
     @ureg.check(None,'[temperature]')
     def temperature(self,value):
+        """Set the temperature
+
+        Parameters
+        ----------
+        value : Quantity [temperature]
+            New temperature value
+
+        Raises
+        ------
+        ValueError
+            If no product table is provided.
+        """
         if self.G_table is None: raise ValueError("No product table provided. Static case being used.")
         self._temperature = value
 
     @property
     def duration(self):
+        """Get the duration
+
+        Returns
+        -------
+        Quantity [time]
+
+        Raises
+        ------
+        ValueError
+            If no product table is provided.
+        """
         if self.G_table is None: raise ValueError("No product table provided. Static case being used.")
         return self._duration
 
     @duration.setter
     @ureg.check(None,'[time]') 
     def duration(self,value):
+        """Set the duration
+
+        Parameters
+        ----------
+        value : Quantity [time]
+            New duration value
+
+        Raises
+        ------
+        ValueError
+            If no product table is provided.
+        """
         if self.G_table is None: raise ValueError("No product table provided. Static case being used.")
         self._duration = value
         
     @property
     def G(self):
+        """Get the shear modulus
+
+        Returns
+        -------
+        Quantity [pressure]
+        """
         return self._G if self._G is not None else self.G_table[self.temperature, self.duration]
 
 interLayer_registry = {
