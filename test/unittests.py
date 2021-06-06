@@ -64,7 +64,7 @@ class TestInterLayer(unittest.TestCase):
     def test_constructor(self):
         G_pvb = 0.281*ureg.MPa
         t_pvb = 0.89*ureg.mm
-        interlayer = lay.InterLayer(t_pvb, G_pvb)
+        interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
         self.assertEqual(interlayer.t, t_pvb)
         self.assertEqual(interlayer.G, G_pvb)
 
@@ -118,7 +118,7 @@ class TestShearTransferCoefMethod(unittest.TestCase):
         glassType = "FT"
         self.ply1 = lay.GlassPly.from_nominal_thickness(self.t1nom,glassType)
         self.ply2 = lay.GlassPly.from_nominal_thickness(self.t2nom,glassType)
-        self.interlayer = lay.InterLayer(t_pvb, G_pvb)
+        self.interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
         package = [self.ply1, self.interlayer, self.ply2]
         self.buildup = [et.ShearTransferCoefMethod(package, self.a)]
 
