@@ -136,8 +136,8 @@ class InterLayer:
         self._G = G_tmp
         self.G_table = G_table_tmp
         if self.G_table is not None:
-            self.temperature = Q_(24, 'degC')
-            self.duration = Q_(3,'sec')
+            self._temperature = None
+            self._duration = None
             # Create a function that does the interpolation for the product table
             # Get the unique values for tempereture in the table in degC
             G_table_x = np.sort(np.array(list(set([ii[0].to("degC").magnitude for ii in self.G_table.keys()]))))
@@ -264,13 +264,20 @@ class InterLayer:
         Returns
         -------
         Quantity [pressure]
-        """
+            The shear modulus
+
+        Raises
+        ------
+        ValueError
+            If a product table is being used and the reference temperature and/or duration are not set.
+        """        
         if self._G is not None:
             return self._G
         else:
             try:
                 return self.G_table[self.temperature, self.duration]
             except KeyError:
+                if self.temperature is None or self.duration is None: raise ValueError("Reference temperature and/or duration not test.")
                 return self.G_interp_dim(self.temperature, self.duration)[0]
                  
 
