@@ -60,13 +60,79 @@ class TestGlassPly(unittest.TestCase):
             ply = lay.GlassPly.from_nominal_thickness(tnom,glassType)
         self.assertEqual(str(cm.exception), "Cannot convert from '8 millimeter ** 2' ([length] ** 2) to 'a quantity of' ([length])")
 
-class TestInterLayer(unittest.TestCase):
-    def test_constructor(self):
+class TestInterLayerStatic(unittest.TestCase):
+    def setUp(self) -> None:
+        self.G_pvb = 0.281*ureg.MPa
+        self.t_pvb = 0.89*ureg.mm
+        self.interlayer = lay.InterLayer.from_static(self.t_pvb, self.G_pvb)
+        lay.InterLayer
+
+    def test_data(self):
+        self.assertIsInstance(self.interlayer, lay.InterLayer)
+        self.assertEqual(self.interlayer.t, self.t_pvb)
+        self.assertEqual(self.interlayer.G, self.G_pvb)
+        
+    def test_invalid_request_for_duration(self):    
+        with self.assertRaises(ValueError) as cm:
+            duration = self.interlayer.duration
+        self.assertEqual(str(cm.exception), "No product table provided. Static case being used.")
+
+    def test_invalid_request_for_temperature(self):
+        with self.assertRaises(ValueError) as cm:
+            temperature = self.interlayer.temperature
+        self.assertEqual(str(cm.exception), "No product table provided. Static case being used.")
+
+class TestInterLayerProductTable(unittest.TestCase):
+    def setUp(self):
+        self.t_pvb = 1.52*ureg.mm
+        product_name = "Ionoplast Interlayer NCSEA"
+        self.interlayer = lay.InterLayer.from_product_table(self.t_pvb, product_name)
+
+    def test_data(self):
+        self.interlayer.temperature = Q_(40,"degC")
+        self.interlayer.duration = Q_(1,"month")
+        self.assertEqual(self.interlayer.t, self.t_pvb)
+        self.assertEqual(self.interlayer.G, Q_(3.29, "MPa"))
+
+    def test_not_setting_ref_temp(self):
+        self.interlayer.duration = Q_(1,"month")
+        self.assertEqual(self.interlayer.t, self.t_pvb)
+        with self.assertRaises(ValueError) as cm:
+            G = self.interlayer.G
+        self.assertEqual(str(cm.exception), "Reference temperature and/or duration not test.")
+
+    def test_not_setting_ref_duration(self):
+        self.interlayer.temperature = Q_(40,"degC")
+        self.assertEqual(self.interlayer.t, self.t_pvb)
+        with self.assertRaises(ValueError) as cm:
+            G = self.interlayer.G
+        self.assertEqual(str(cm.exception), "Reference temperature and/or duration not test.")
+
+class TestInvalidInterLayerClassMethods(unittest.TestCase):
+    def test_invalid_product_name(self):
+        t_pvb = 1.52*ureg.mm
+        product_name = "product 1"
+        with self.assertRaises(ValueError) as cm:
+            interlayer = lay.InterLayer.from_product_table(t_pvb, product_name)
+        self.assertEqual(str(cm.exception), "The product is not registered in the product registry.")
+    def test_invalid_product_thickness(self):
+        t_pvb = -1.52*ureg.mm
+        product_name = "PVB NCSEA"
+        with self.assertRaises(ValueError) as cm:
+            interlayer = lay.InterLayer.from_product_table(t_pvb, product_name)
+        self.assertEqual(str(cm.exception), "The thickness must be greater than zero [lengh].")
+    def test_invalid_static_shear_mod(self):
+        t_pvb = 1.52*ureg.mm
+        G_pvb = -0.281*ureg.MPa
+        with self.assertRaises(ValueError) as cm:
+            interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
+        self.assertEqual(str(cm.exception), "The shear modulus must be greater than zero [pressure].")
+    def test_invalid_static_thickness(self):
+        t_pvb = -1.52*ureg.mm
         G_pvb = 0.281*ureg.MPa
-        t_pvb = 0.89*ureg.mm
-        interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
-        self.assertEqual(interlayer.t, t_pvb)
-        self.assertEqual(interlayer.G, G_pvb)
+        with self.assertRaises(ValueError) as cm:
+            interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
+        self.assertEqual(str(cm.exception), "The thickness must be greater than zero [lengh].")
 
 class TestMonolithicMethod(unittest.TestCase):
     def setUp(self):

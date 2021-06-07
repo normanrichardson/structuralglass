@@ -155,6 +155,7 @@ class InterLayer:
             self.G_interp_dim = ureg.wraps(ureg.MPa, (ureg.degC,ureg.second))(lambda x,y: G_interp(x,y))
 
     @classmethod
+    @ureg.check(None,"[length]",None)
     def from_product_table(cls, t, product_name):
         """Class method for an interlayer with a product table.
 
@@ -169,10 +170,14 @@ class InterLayer:
         -------
         Interlayer
         """
-        interLayer_registry[product_name]
-        return cls(t,G_table = interLayer_registry[product_name])
+        if not(t > Q_(0, "mm")): raise ValueError("The thickness must be greater than zero [lengh].")
+        table = interLayer_registry.get(product_name, None)
+        if table is None:
+            raise ValueError("The product is not registered in the product registry.")
+        return cls(t,G_table = table)
     
     @classmethod
+    @ureg.check(None,"[length]","[pressure]")
     def from_static(cls, t, G):
         """Class method for an interlayer with a static shear modulus.
 
@@ -187,6 +192,8 @@ class InterLayer:
         -------
         Interlayer
         """
+        if not(t > Q_(0, "mm")): raise ValueError("The thickness must be greater than zero [lengh].")
+        if not(G > Q_(0, "MPa")): raise ValueError("The shear modulus must be greater than zero [pressure].")
         return cls(t,G=G)
 
     @property
