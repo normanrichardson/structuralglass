@@ -171,7 +171,7 @@ class InterLayer:
         Interlayer
         """
         if not(t > Q_(0, "mm")): raise ValueError("The thickness must be greater than zero [lengh].")
-        table = interLayer_registry.get(product_name, None)
+        table = _interLayer_registry.get(product_name, None)
         if table is None:
             raise ValueError("The product is not registered in the product registry.")
         return cls(t,G_table = table)
@@ -286,9 +286,129 @@ class InterLayer:
             except KeyError:
                 if self.temperature is None or self.duration is None: raise ValueError("Reference temperature and/or duration not test.")
                 return self.G_interp_dim(self.temperature, self.duration)[0]
-                 
 
-interLayer_registry = {
+_interLayer_registry = {}
+def register_interlayer_product(product_name, data):
+    G_table_tmp = set([ii[0].to("degC").magnitude for ii in data.keys()])
+    G_table_dur = set([ii[1].to("sec").magnitude for ii in data.keys()])
+    G_table_val = list(data.values())
+    # check that the provided data is "rectangular"
+    if len(G_table_tmp) * len(G_table_dur) != len(G_table_val):
+        raise ValueError("The provided data is not rectangular.")
+    _interLayer_registry[product_name] = data 
+
+__name_II = "Ionoplast Interlayer NCSEA"
+__data_II = {
+    (Q_(10,"degC"), Q_(1,'sec')) : Q_(240, "MPa"),
+    (Q_(20,"degC"), Q_(1,'sec')) : Q_(217, "MPa"),
+    (Q_(24,"degC"), Q_(1,'sec')) : Q_(200, "MPa"),
+    (Q_(30,"degC"), Q_(1,'sec')) : Q_(151, "MPa"),
+    (Q_(40,"degC"), Q_(1,'sec')) : Q_(77.0, "MPa"),
+    (Q_(50,"degC"), Q_(1,'sec')) : Q_(36.2, "MPa"),
+    (Q_(60,"degC"), Q_(1,'sec')) : Q_(11.8, "MPa"),
+    (Q_(70,"degC"), Q_(1,'sec')) : Q_(3.77, "MPa"),
+    (Q_(80,"degC"), Q_(1,'sec')) : Q_(1.55, "MPa"),
+
+    (Q_(10,"degC"), Q_(3,'sec')) : Q_(236, "MPa"),
+    (Q_(20,"degC"), Q_(3,'sec')) : Q_(211, "MPa"),
+    (Q_(24,"degC"), Q_(3,'sec')) : Q_(193, "MPa"),
+    (Q_(30,"degC"), Q_(3,'sec')) : Q_(141, "MPa"),
+    (Q_(40,"degC"), Q_(3,'sec')) : Q_(63.0, "MPa"),
+    (Q_(50,"degC"), Q_(3,'sec')) : Q_(26.4, "MPa"),
+    (Q_(60,"degC"), Q_(3,'sec')) : Q_(8.18, "MPa"),
+    (Q_(70,"degC"), Q_(3,'sec')) : Q_(2.93, "MPa"),
+    (Q_(80,"degC"), Q_(3,'sec')) : Q_(1.32, "MPa"),
+
+    (Q_(10,"degC"), Q_(1,'min')) : Q_(225, "MPa"),
+    (Q_(20,"degC"), Q_(1,'min')) : Q_(195, "MPa"),
+    (Q_(24,"degC"), Q_(1,'min')) : Q_(173, "MPa"),
+    (Q_(30,"degC"), Q_(1,'min')) : Q_(110, "MPa"),
+    (Q_(40,"degC"), Q_(1,'min')) : Q_(30.7, "MPa"),
+    (Q_(50,"degC"), Q_(1,'min')) : Q_(11.3, "MPa"),
+    (Q_(60,"degC"), Q_(1,'min')) : Q_(3.64, "MPa"),
+    (Q_(70,"degC"), Q_(1,'min')) : Q_(1.88, "MPa"),
+    (Q_(80,"degC"), Q_(1,'min')) : Q_(0.83, "MPa"),
+
+    (Q_(10,"degC"), Q_(1,'hour')) : Q_(206, "MPa"),
+    (Q_(20,"degC"), Q_(1,'hour')) : Q_(169, "MPa"),
+    (Q_(24,"degC"), Q_(1,'hour')) : Q_(142, "MPa"),
+    (Q_(30,"degC"), Q_(1,'hour')) : Q_(59.9, "MPa"),
+    (Q_(40,"degC"), Q_(1,'hour')) : Q_(9.28, "MPa"),
+    (Q_(50,"degC"), Q_(1,'hour')) : Q_(4.20, "MPa"),
+    (Q_(60,"degC"), Q_(1,'hour')) : Q_(1.70, "MPa"),
+    (Q_(70,"degC"), Q_(1,'hour')) : Q_(0.84, "MPa"),
+    (Q_(80,"degC"), Q_(1,'hour')) : Q_(0.32, "MPa"),
+
+    (Q_(10,"degC"), Q_(1,'day')) : Q_(190, "MPa"),
+    (Q_(20,"degC"), Q_(1,'day')) : Q_(146, "MPa"),
+    (Q_(24,"degC"), Q_(1,'day')) : Q_(111, "MPa"),
+    (Q_(30,"degC"), Q_(1,'day')) : Q_(49.7, "MPa"),
+    (Q_(40,"degC"), Q_(1,'day')) : Q_(4.54, "MPa"),
+    (Q_(50,"degC"), Q_(1,'day')) : Q_(2.82, "MPa"),
+    (Q_(60,"degC"), Q_(1,'day')) : Q_(1.29, "MPa"),
+    (Q_(70,"degC"), Q_(1,'day')) : Q_(0.59, "MPa"),
+    (Q_(80,"degC"), Q_(1,'day')) : Q_(0.25, "MPa"),
+
+    (Q_(10,"degC"), Q_(1,'month')) : Q_(171, "MPa"),
+    (Q_(20,"degC"), Q_(1,'month')) : Q_(112, "MPa"),
+    (Q_(24,"degC"), Q_(1,'month')) : Q_(73.2, "MPa"),
+    (Q_(30,"degC"), Q_(1,'month')) : Q_(11.6, "MPa"),
+    (Q_(40,"degC"), Q_(1,'month')) : Q_(3.29, "MPa"),
+    (Q_(50,"degC"), Q_(1,'month')) : Q_(2.18, "MPa"),
+    (Q_(60,"degC"), Q_(1,'month')) : Q_(1.08, "MPa"),
+    (Q_(70,"degC"), Q_(1,'month')) : Q_(0.48, "MPa"),
+    (Q_(80,"degC"), Q_(1,'month')) : Q_(0.21, "MPa"),
+
+    (Q_(10,"degC"), Q_(10,'year')) : Q_(153, "MPa"),
+    (Q_(20,"degC"), Q_(10,'year')) : Q_(86.6, "MPa"),
+    (Q_(24,"degC"), Q_(10,'year')) : Q_(26.0, "MPa"),
+    (Q_(30,"degC"), Q_(10,'year')) : Q_(5.31, "MPa"),
+    (Q_(40,"degC"), Q_(10,'year')) : Q_(2.95, "MPa"),
+    (Q_(50,"degC"), Q_(10,'year')) : Q_(2.00, "MPa"),
+    (Q_(60,"degC"), Q_(10,'year')) : Q_(0.97, "MPa"),
+    (Q_(70,"degC"), Q_(10,'year')) : Q_(0.45, "MPa"),
+    (Q_(80,"degC"), Q_(10,'year')) : Q_(0.18, "MPa")
+}
+
+register_interlayer_product(__name_II, __data_II)
+
+__name_PVB = "PVB NCSEA"
+__data_PVB = {
+    (Q_(20,"degC"), Q_(3,'sec')) : Q_(8.060, "MPa"),
+    (Q_(30,"degC"), Q_(3,'sec')) : Q_(0.971, "MPa"),
+    (Q_(40,"degC"), Q_(3,'sec')) : Q_(0.610, "MPa"),
+    (Q_(50,"degC"), Q_(3,'sec')) : Q_(0.440, "MPa"),
+
+    (Q_(20,"degC"), Q_(1,'min')) : Q_(1.640, "MPa"),
+    (Q_(30,"degC"), Q_(1,'min')) : Q_(0.753, "MPa"),
+    (Q_(40,"degC"), Q_(1,'min')) : Q_(0.455, "MPa"),
+    (Q_(50,"degC"), Q_(1,'min')) : Q_(0.290, "MPa"),
+
+    (Q_(20,"degC"), Q_(1,'hour')) : Q_(0.840, "MPa"),
+    (Q_(30,"degC"), Q_(1,'hour')) : Q_(0.441, "MPa"),
+    (Q_(40,"degC"), Q_(1,'hour')) : Q_(0.234, "MPa"),
+    (Q_(50,"degC"), Q_(1,'hour')) : Q_(0.052, "MPa"),
+
+    (Q_(20,"degC"), Q_(1,'day')) : Q_(0.508, "MPa"),
+    (Q_(30,"degC"), Q_(1,'day')) : Q_(0.281, "MPa"),
+    (Q_(40,"degC"), Q_(1,'day')) : Q_(0.234, "MPa"),
+    (Q_(50,"degC"), Q_(1,'day')) : Q_(0.052, "MPa"),
+
+    (Q_(20,"degC"), Q_(1,'month')) : Q_(0.372, "MPa"),
+    (Q_(30,"degC"), Q_(1,'month')) : Q_(0.069, "MPa"),
+    (Q_(40,"degC"), Q_(1,'month')) : Q_(0.052, "MPa"),
+    (Q_(50,"degC"), Q_(1,'month')) : Q_(0.052, "MPa"),
+
+    (Q_(20,"degC"), Q_(1,'year')) : Q_(0.266, "MPa"),
+    (Q_(30,"degC"), Q_(1,'year')) : Q_(0.052, "MPa"),
+    (Q_(40,"degC"), Q_(1,'year')) : Q_(0.052, "MPa"),
+    (Q_(50,"degC"), Q_(1,'year')) : Q_(0.052, "MPa")
+}
+
+register_interlayer_product(__name_PVB, __data_PVB)
+
+"""
+_interLayer_registry = {
     "Ionoplast Interlayer NCSEA" : {
         (Q_(10,"degC"), Q_(1,'sec')) : Q_(240, "MPa"),
         (Q_(20,"degC"), Q_(1,'sec')) : Q_(217, "MPa"),
@@ -392,3 +512,4 @@ interLayer_registry = {
         (Q_(50,"degC"), Q_(1,'year')) : Q_(0.052, "MPa")
     }
 }
+"""
