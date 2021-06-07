@@ -1,5 +1,6 @@
-from re import template
 from . import ureg, Q_
+from scipy import interpolate
+import numpy as np
 
 # Lookup for nominal thickness to minimal allowable thickness in metric
 t_min_lookup_metric = {
@@ -96,8 +97,6 @@ class InterLayer:
             The load case temperature, if a product table is used.
         duration:
             The load case duration, if a product table is used.
-        table_interpolation:
-            The interpolation method, if a product table is used.
 
         Methods
         -------
@@ -136,10 +135,24 @@ class InterLayer:
             raise ValueError("Only one of G or G_table must be provided.")
         self._G = G_tmp
         self.G_table = G_table_tmp
-        if G_table_tmp is not None:
+        if self.G_table is not None:
             self.temperature = Q_(24, 'degC')
             self.duration = Q_(3,'sec')
-            self.table_interpolation = "min"
+            # Create a function that does the interpolation for the product table
+            # Get the unique values for tempereture in the table in degC
+            G_table_x = np.sort(np.array(list(set([ii[0].to("degC").magnitude for ii in self.G_table.keys()]))))
+            # Get the unique values for duration in the table in sec
+            G_table_y = np.sort(np.array(list(set([ii[1].to("sec").magnitude for ii in self.G_table.keys()]))))
+            # Create a meshgrid for the interpolation process
+            x, y = np.meshgrid(G_table_x, G_table_y)
+            # vectorize the look up for the tables (this is done as the entries in the table may not be in order)
+            vlookup = np.vectorize(lambda x,y: self.G_table[Q_(x,"degC"),Q_(y,"sec")].to("MPa").magnitude)
+            # Exicute the vectorized lookup
+            G_table_z = vlookup(x,y)
+            # create the interploation function
+            G_interp = interpolate.interp2d(G_table_x, G_table_y, G_table_z, kind='linear')
+            # use a decorator to add dimentions to the interpolation function
+            self.G_interp_dim = ureg.wraps(ureg.MPa, (ureg.degC,ureg.second))(lambda x,y: G_interp(x,y))
 
     @classmethod
     def from_product_table(cls, t, product_name):
@@ -246,13 +259,20 @@ class InterLayer:
         
     @property
     def G(self):
-        """Get the shear modulus
+        """Get the shear modulus. Interpolates linearly within the domain of the provided table.
 
         Returns
         -------
         Quantity [pressure]
         """
-        return self._G if self._G is not None else self.G_table[self.temperature, self.duration]
+        if self._G is not None:
+            return self._G
+        else:
+            try:
+                return self.G_table[self.temperature, self.duration]
+            except KeyError:
+                return self.G_interp_dim(self.temperature, self.duration)[0]
+                 
 
 interLayer_registry = {
     "Ionoplast Interlayer NCSEA" : {
@@ -327,10 +347,10 @@ interLayer_registry = {
         (Q_(80,"degC"), Q_(10,'year')) : Q_(0.18, "MPa")
     },
     "PVB NCSEA" : {
-        (Q_(20,"degC"), Q_(3,'min')) : Q_(8.060, "MPa"),
-        (Q_(30,"degC"), Q_(3,'min')) : Q_(0.971, "MPa"),
-        (Q_(40,"degC"), Q_(3,'min')) : Q_(0.610, "MPa"),
-        (Q_(50,"degC"), Q_(3,'min')) : Q_(0.440, "MPa"),
+        (Q_(20,"degC"), Q_(3,'sec')) : Q_(8.060, "MPa"),
+        (Q_(30,"degC"), Q_(3,'sec')) : Q_(0.971, "MPa"),
+        (Q_(40,"degC"), Q_(3,'sec')) : Q_(0.610, "MPa"),
+        (Q_(50,"degC"), Q_(3,'sec')) : Q_(0.440, "MPa"),
 
         (Q_(20,"degC"), Q_(1,'min')) : Q_(1.640, "MPa"),
         (Q_(30,"degC"), Q_(1,'min')) : Q_(0.753, "MPa"),
