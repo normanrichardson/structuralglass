@@ -1,5 +1,6 @@
 import unittest
 import pint
+from pint import unit
 from structuralglass import ureg, Q_
 import structuralglass.glass_types as gt
 import structuralglass.layers as lay
@@ -82,6 +83,35 @@ class TestInterLayerStatic(unittest.TestCase):
             temperature = self.interlayer.temperature
         self.assertEqual(str(cm.exception), "No product table provided. Static case being used.")
 
+class TestInterlayerProductRegistration(unittest.TestCase):
+
+    def test_valid_product_data(self):
+        name = "nice product"
+        data = {
+            (Q_(20,"degC"), Q_(3,'sec')) : Q_(240, "MPa"),
+            (Q_(30,"degC"), Q_(3,'sec')) : Q_(217, "MPa"),
+            (Q_(40,"degC"), Q_(3,'sec')) : Q_(151, "MPa"),
+
+            (Q_(20,"degC"), Q_(10,'min')) : Q_(77.0, "MPa"),
+            (Q_(30,"degC"), Q_(10,'min')) : Q_(36.2, "MPa"),
+            (Q_(40,"degC"), Q_(10,'min')) : Q_(11.8, "MPa"),
+        }
+        lay.register_interlayer_product(name, data)
+        self.assertDictEqual(lay._interLayer_registry[name], data)
+    def test_invalid_product_data(self):
+        name = "not so nice product"
+        invalid_data = {
+            (Q_(20,"degC"), Q_(3,'sec')) : Q_(240, "MPa"),
+            (Q_(30,"degC"), Q_(3,'sec')) : Q_(217, "MPa"),
+            (Q_(40,"degC"), Q_(3,'sec')) : Q_(151, "MPa"),
+
+            (Q_(30,"degC"), Q_(10,'min')) : Q_(36.2, "MPa"),
+            (Q_(40,"degC"), Q_(10,'min')) : Q_(11.8, "MPa"),
+        }
+        with self.assertRaises(ValueError) as cm:
+            lay.register_interlayer_product(name, invalid_data)
+        self.assertEqual(str(cm.exception), "The provided data is not rectangular.")
+        
 class TestInterLayerProductTable(unittest.TestCase):
     def setUp(self):
         self.t_pvb = 1.52*ureg.mm
