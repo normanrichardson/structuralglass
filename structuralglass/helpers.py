@@ -39,25 +39,27 @@ class Roarks4side:
         alpha = [0.044, 0.0616, 0.077, 0.0906, 0.1017, 0.111, 0.1335, 0.14, 0.1417, 0.1421]
         gamma = [0.42, 0.455, 0.478, 0.491, 0.499, 0.503, 0.505, 0.502, 0.501, 0.5]
 
-        self.beta = interpolate.interp1d(ratios, beta)
-        self.alpha = interpolate.interp1d(ratios, alpha)
-        self.gamma = interpolate.interp1d(ratios, gamma)
+        self._beta = interpolate.interp1d(ratios, beta)
+        self._alpha = interpolate.interp1d(ratios, alpha)
+        self._gamma = interpolate.interp1d(ratios, gamma)
 
     @ureg.check(None, '[pressure]')
     def stress_max(self,q):
-        value = self.beta(self._ratio)*q*(self._b/self.t)**2
+        value = self._beta(self._ratio)*q*(self._b/self.t)**2
         return value.to_reduced_units()
+
     @ureg.check(None, '[pressure]')
     def deflection_max(self,q):
-        value = -self.alpha(self._ratio)*q*self._b**4/(self.E*self.t**3)
+        value = -self._alpha(self._ratio)*q*self._b**4/(self.E*self.t**3)
         return value.to_reduced_units()
+
     @ureg.check(None, '[pressure]')
     def reaction_max(self,q):
-        value = self.gamma(self._ratio)*q*self._b
+        value = self._gamma(self._ratio)*q*self._b
         return value.to_reduced_units()
 
     def _reset_ratio(self):
-        self._a, self._b = (self.dim_x > self.dim_y) if self.dim_x > self.dim_y else (self.dim_y, self.dim_x)
+        self._a, self._b = (self.dim_x, self.dim_y) if self.dim_x > self.dim_y else (self.dim_y, self.dim_x)
         self._ratio = float(self._a/self._b)
 
     @property
