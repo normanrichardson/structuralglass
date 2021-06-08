@@ -1,0 +1,11 @@
+
+
+
+
+# Pressure additional
+pound_force_per_square_foot = pound * gravity / foot ** 2 = psf
+
+
+#Force per linear length
+[force_per_linear_length] = [force] / [length]
+pound_force_per_linear_foot = pound * gravity / foot = plf
