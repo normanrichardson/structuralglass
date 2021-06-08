@@ -5,6 +5,7 @@ from structuralglass import ureg, Q_
 import structuralglass.glass_types as gt
 import structuralglass.layers as lay
 import structuralglass.equiv_thick_models as et
+import structuralglass.helpers as hp
 import structuralglass.demands as dem
 
 class TestGlassPly(unittest.TestCase):
@@ -297,6 +298,63 @@ class TestFullyTemperedGlassType(unittest.TestCase):
     def test_surf_factors(self):
         self.assertAlmostEqual(self.ft.surf_factors["Acid etching"], 0.5)
         
+
+class TestRoarks4sidePlate(unittest.TestCase):
+    def setUp(self):
+        self.rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+    def test_data(self):
+        self.assertEqual(self.rk4s.dim_x, Q_(5, "ft"))
+        self.assertEqual(self.rk4s.dim_y, Q_(10, "ft"))
+    def test_stress_max(self):
+        self.assertAlmostEqual(self.rk4s.stress_max(Q_(20,'psf')), Q_(8.41436178451202, "MPa"),3)
+    def test_deflection_max(self):
+        self.assertAlmostEqual(self.rk4s.deflection_max(Q_(20,'psf')), Q_(-0.153704045,"in"))
+    def test_reaction_max(self):
+        self.assertAlmostEqual(self.rk4s.reaction_max(Q_(20,'psf')), Q_(50.3,"plf"))
+    def test_change_properties(self):
+        self.rk4s.dim_x = Q_(15,'ft')
+        self.rk4s.dim_y = Q_(5,'ft')
+        self.rk4s.t = Q_(0.25,'in')
+        self.rk4s.E = Q_(200,'GPa')
+        self.assertAlmostEqual(self.rk4s.stress_max(Q_(20,'psf')), Q_(39.349758824, "MPa"),0)
+
+class TestRoarks4sidePlateInvalid(unittest.TestCase):
+    def test_invalid_dimension_1(self):
+        with self.assertRaises(ValueError) as cm:
+            rk4s = hp.Roarks4side(Q_(-5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        self.assertEqual(str(cm.exception), "Dimensions must be greater than zero.")
+    def test_invalid_dimension_2(self):
+        with self.assertRaises(ValueError) as cm:
+            rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(-10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        self.assertEqual(str(cm.exception), "Dimensions must be greater than zero.")
+    def test_invalid_thickness(self):
+        with self.assertRaises(ValueError) as cm:
+            rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(-0.5, "inch"), Q_(71.7, 'GPa'))
+        self.assertEqual(str(cm.exception), "Thickness must be greater than zero.")
+    def test_invalid_elastic_mod(self):
+        with self.assertRaises(ValueError) as cm:
+            rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(-71.7, 'GPa'))
+        self.assertEqual(str(cm.exception), "Elastic modulus must be greater than zero.")
+    def test_invalid_dimension_prop_1(self):
+        rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        with self.assertRaises(ValueError) as cm:
+            rk4s.dim_x = Q_(-10,"ft")
+        self.assertEqual(str(cm.exception), "Dimensions must be greater than zero.")
+    def test_invalid_dimension_prop_2(self):
+        rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        with self.assertRaises(ValueError) as cm:
+            rk4s.dim_y = Q_(-5,"ft")
+        self.assertEqual(str(cm.exception), "Dimensions must be greater than zero.")
+    def test_invalid_thickness_prop(self):
+        rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        with self.assertRaises(ValueError) as cm:
+            rk4s.t = Q_(-0.75,"inch")
+        self.assertEqual(str(cm.exception), "Thickness must be greater than zero.")
+    def test_invalid_elastic_mod_prop(self):
+        rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        with self.assertRaises(ValueError) as cm:
+            rk4s.E = Q_(-200,'GPa')
+        self.assertEqual(str(cm.exception), "Elastic modulus must be greater than zero.")
 
 if __name__ == '__main__':
     unittest.main()
