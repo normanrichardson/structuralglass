@@ -26,13 +26,14 @@ class GlassLiteEquiv:
             Abstract method that sets h_efw and h_efs for that formulation.
     """
     __metaclass__ = abc.ABCMeta
-    def __init__(self, ply):
+    def __init__(self, E, ply):
         """
             Args:
                 ply (List[GlassPly and InterLayer]): The list of glass layers and interlayers that form a laminate.
         """
         self.h_efw = None
         self.h_efs = None
+        self.E = E
         self.ply = ply
 
     @abc.abstractmethod
@@ -72,7 +73,13 @@ class MonolithicMethod(GlassLiteEquiv):
             Args:
                 plys (List[GlassPly]): The list of glass layers that form a laminate.
         """
-        super(MonolithicMethod, self).__init__(plys)
+
+        # check the elastic modulus of all plys is the same
+        set_E = set([ii.E for ii in plys])
+        if len(set_E) != 1: raise ValueError("The plys must have the same elastic modulus.")
+        E = list(set_E)[0]
+
+        super(MonolithicMethod, self).__init__(E, plys)
         self.calcEquivThickness()
 
     def calcEquivThickness(self):
@@ -113,6 +120,12 @@ class NonCompositeMethod(GlassLiteEquiv):
             Args:
                 plys (List[GlassPly]): The list of glass layers that form a laminate.
         """
+
+        # check the elastic modulus of all plys is the same
+        set_E = set([ii.E for ii in plys])
+        if len(set_E) != 1: raise ValueError("The plys must have the same elastic modulus.")
+        E = list(set_E)[0]
+
         super(NonCompositeMethod, self).__init__(plys)
         self.calcEquivThickness()
 
@@ -160,7 +173,13 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
                 a (Quantity [length]): Minimum dimension of the rectangular panel
         """
         assert self.validlite(plys), "Method is only valid for 2 ply glass laminates"
-        super(ShearTransferCoefMethod, self).__init__(plys)
+
+        # check the elastic modulus of all plys is the same
+        set_E =set([plys[0].E, plys[2].E])
+        if len(set_E) != 1: raise ValueError("The plys must have the same elastic modulus.")
+        E = list(set_E)[0]
+
+        super(ShearTransferCoefMethod, self).__init__(E,plys)
         self.panelMinLen = a
         self.calcEquivThickness()
 

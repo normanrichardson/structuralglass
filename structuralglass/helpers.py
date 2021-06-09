@@ -3,6 +3,7 @@ from . import ureg, Q_
 
 class Roarks4side:
     """Roarks four sided simply supported plate calculations.
+    
     Parameters
     ----------
     dim_x: Quantity['length']

@@ -42,7 +42,8 @@ package2 = et.MonolithicMethod([ply3])
 buildup = [package1, package2]
 
 # Panel
-panel = dem.GlassPanel(a , b, buildup, windLoad)
+panel = dem.GlassPanel(buildup, windLoad, dim_x=a , dim_y=b)
+panel.solve()
 
 # Results
 print("-------------Package values-------------")
