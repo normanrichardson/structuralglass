@@ -289,6 +289,22 @@ class InterLayer:
 
 _interLayer_registry = {}
 def register_interlayer_product(product_name, data):
+    """Register new interlayer product table.
+
+    Parameters
+    ----------
+    product_name : str
+        String identifier
+    data : Dict( Tuple(Quanity['temperature'], Quanity['time']), Quanity['pressure'])
+        The tabulated data of the shear modulus that depends on temperature and load duration.
+
+    Raises
+    ------
+    ValueError
+        If the provided data table is not rectangular. E.g. if shear modulus values are given for 
+        (20degC, 3s) and (30degC, 10min), then values for (30degC, 3s) and (20degC, 10min) must also 
+        be provided.
+    """
     G_table_tmp = set([ii[0].to("degC").magnitude for ii in data.keys()])
     G_table_dur = set([ii[1].to("sec").magnitude for ii in data.keys()])
     G_table_val = list(data.values())
