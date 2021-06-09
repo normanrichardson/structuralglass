@@ -21,8 +21,8 @@ class Roarks4side:
         __init__(ratio):
             Constructor for a panels aspect ratio.
     """
-    @ureg.check(None, '[length]','[length]','[length]','[pressure]')
-    def __init__(self, dim_x, dim_y, t, E):
+    @ureg.check(None, '[length]','[length]','[pressure]', '[length]')
+    def __init__(self, dim_x, dim_y, E, t=Q_(1,"inch")):
         """
             Args:
                 ratio (float): the ratio of the largest dimension to the smallest dimension (rectangular panel)

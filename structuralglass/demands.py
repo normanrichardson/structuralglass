@@ -35,14 +35,9 @@ class GlassPanel:
         assert len(set(map(lambda x: type(x), buildup)))==1, "Mixing of effective thickness models. Only one model should be used."
         self.windLoad = windLoad
         self.buildup = buildup
-        if width<height:
-            self.a, self.b = height, width
-        else:
-            self.b, self.a = height, width
-
         E_glass = 71.7 * ureg.GPa
-        r4s = Roarks4side((self.a/self.b).magnitude)
-
+        r4s = Roarks4side(width, height, E_glass)
+        
         # Determine the load share factor
         denom = sum(map(lambda x: (x.h_efw)**3 , self.buildup))
         self.LSF = dict(zip(self.buildup,map(lambda x: x.h_efw**3/denom , self.buildup)))
@@ -51,6 +46,7 @@ class GlassPanel:
         self.deflection = {}
         for lite in self.buildup:
             for ply, h_efs in lite.h_efs.items():
-                self.stress[ply] = (r4s.beta * self.windLoad * self.LSF[lite] * self.b**2 / (h_efs**2)).to('MPa')
+                r4s.t = h_efs
+                self.stress[ply] = r4s.stress_max(self.windLoad * self.LSF[lite])
 
-            self.deflection[lite] =(r4s.alpha * self.windLoad * self.LSF[lite] * self.b**4 / (E_glass * lite.h_efw**3)).to('mm') 
+            self.deflection[lite] = r4s.deflection_max(self.windLoad * self.LSF[lite])
