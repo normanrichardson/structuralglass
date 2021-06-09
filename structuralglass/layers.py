@@ -1,5 +1,6 @@
 from . import ureg, Q_
 from scipy import interpolate
+import pint
 import numpy as np
 
 # Lookup for nominal thickness to minimal allowable thickness in metric
@@ -53,20 +54,44 @@ class GlassPly:
         __init__(t_nom, glassType):
             Constructor for a ply with nominal thickness
     """
-    def __init__(self, t_min, glassType, t_nom=None):
+    @ureg.check(None, '[length]', None, '[pressure]')
+    def __init__(self, t_min, t_nom = None, E = 71.7 * ureg.GPa):
         """
             Args:
                 t_nom (Quantity [length]): nominal thickness
                 glassType (str): Glass type [AN, HS, FT]
         """
+        # The check decorator can not be used to check t_nom
+        if t_nom is not None:
+            if (isinstance(t_nom,Q_)): 
+                if not t_nom.check('[length]'): 
+                    dim = t_nom.dimensionality
+                    unit = t_nom.units
+                    # Is a Quantity by not the corret dim
+                    raise pint.DimensionalityError(unit,'inch', dim, '[length]')
+            else: raise TypeError("t_nom is not a Quanity['length'] or None")
+            
+        if t_min < Q_(0,'inch'): raise ValueError("Actual thickness cannot be less than zero.")
+
         self.E = 71.7 * ureg.GPa
-        self.t_min = t_min
-        self.t_nom = t_nom
-        self.glassType = glassType
+        self._t_min = t_min
+        self._t_nom = t_nom
     
     @classmethod
-    @ureg.check(None, '[length]', None)
-    def from_nominal_thickness(cls, t_nom, glassType):
+    @ureg.check(None, '[length]')
+    def from_nominal_thickness(cls, t_nom):
+        t_min = cls._find_min_from_nom(t_nom)
+        print(t_nom)
+        print(t_min)
+        return cls(t_min,t_nom)
+    
+    @classmethod
+    @ureg.check(None, '[length]')
+    def from_actual_thickness(cls, t_act):
+        return cls(t_act)
+
+    @staticmethod
+    def _find_min_from_nom(t_nom):
         try:
             t_min = t_min_lookup_metric[t_nom.to(ureg.mm).magnitude] * ureg.mm
         except KeyError:
@@ -74,11 +99,42 @@ class GlassPly:
                 t_min = t_min_lookup_imperial[t_nom.to(ureg.inch).magnitude] * ureg.mm
             except KeyError:
                 raise ValueError("Could not find the nominal tickness of {0} in the nominal thickness lookup.".format(t_nom))
-        return cls(t_min,glassType,t_nom)
+        return t_min
+
+    @property
+    def E(self):
+        return self._E
     
-    @classmethod
-    def from_actual_thickness(cls, t_act, glassType):
-        return cls(t_act, glassType)
+    @E.setter
+    @ureg.check(None, '[pressure]')
+    def E(self, value):
+        if value < Q_(0,'MPa'): raise ValueError("Elastic modulus cannot be less than zero.")
+        self._E = value
+    
+    @property
+    def t_nom(self):
+        return self._t_nom
+    
+    @t_nom.setter
+    @ureg.check(None, '[length]')
+    def t_nom(self, value):
+        if value < Q_(0,'inch'): raise ValueError("Nominal thickness cannot be less than zero.")
+        self._t_nom = value
+        self._t_min = self._find_min_from_nom(value)
+
+    @property
+    def t_min(self):
+        return self._t_min
+    
+    @t_min.setter
+    @ureg.check(None, '[length]')
+    def t_min(self, value):
+        if value < Q_(0,'inch'): raise ValueError("Actual thickness cannot be less than zero.")
+        self._t_min = value
+        self._t_nom = None
+
+
+
 
 class InterLayer:
     """

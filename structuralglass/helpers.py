@@ -33,7 +33,7 @@ class Roarks4side:
     """
 
     @ureg.check(None, '[length]','[length]','[pressure]', '[length]')
-    def __init__(self, dim_x, dim_y, E, t=Q_(1,"inch")):
+    def __init__(self, E, dim_x, dim_y, t=Q_(1,"inch")):
         """Constructor
         Parameters
         ----------
