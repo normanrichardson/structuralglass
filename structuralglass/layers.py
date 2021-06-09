@@ -34,42 +34,66 @@ t_min_lookup_imperial = {
 }
 
 class GlassPly:
-    """
-        A class to represent a glass ply, its thinkess (nominal and minimum allowable) and mechanical properties.
+    """A class to represent a glass ply, its thinkess (nominal and minimum allowable) and mechanical properties.
 
-        ...
-
-        Attributes
-        ----------
-        E : Quantity [pressure]
-            Elastic modulus
-        t_nom : Quantity [length]
-            nominal thickness
-        t_min : Quantity [length]
-            min allowable thickness
-        glassType : str
-            Glass type [AN, HS, FT]
-        Methods
-        -------
-        __init__(t_nom, glassType):
-            Constructor for a ply with nominal thickness
-    """
+    Attributes
+    ----------
+    E : Quantity [pressure]
+        Elastic modulus.
+    t_nom : Quantity [length]
+        Nominal thickness.
+    t_min : Quantity [length]
+        Min allowable thickness.
+    
+    Methods
+    -------
+    from_nominal_thickness(t_nom):
+        Class method to creating a GlassPly with a nominal thickness.
+    from_actual_thickness(t_nom):
+        Class method to creating a GlassPly with an actual thickness.
+    
+    Raises
+    ------
+    pint.DimensionalityError
+        If an input argument does not meet the Quantity requirement.
+    TypeError
+        The provided nominal thickness is not a Quanity['length'] or None.
+    ValueError
+        Actual thickness/elastic modulus/nominal thickness cannot be less than zero.
+    ValueError
+        The provided nominal thickness could not be found in the lookup.
+    """    
     @ureg.check(None, '[length]', None, '[pressure]')
     def __init__(self, t_min, t_nom = None, E = 71.7 * ureg.GPa):
+        """[summary]
+
+        Parameters
+        ----------
+        t_min : Quantity [length]
+            Min allowable thickness.
+        t_nom : Quantity [length], optional
+            Nominal thickness, by default None (if using actual thickness)
+        E : Quantity [pressure], optional
+            Elastic modulus, by default 71.7GPa
+
+        Raises
+        ------
+        pint.DimensionalityError
+            If an input argument does not meet the Quantity requirement.
+        TypeError
+            The provided nominal thickness is not a Quanity['length'] or None.
+        ValueError
+            Actual thickness/elastic modulus/nominal thickness cannot be less than zero.
         """
-            Args:
-                t_nom (Quantity [length]): nominal thickness
-                glassType (str): Glass type [AN, HS, FT]
-        """
-        # The check decorator can not be used to check t_nom
+        # The check decorator can not be used to check t_nom (as it can be None)
         if t_nom is not None:
             if (isinstance(t_nom,Q_)): 
                 if not t_nom.check('[length]'): 
                     dim = t_nom.dimensionality
                     unit = t_nom.units
-                    # Is a Quantity by not the corret dim
+                    # Is a Quantity but not the corret dim
                     raise pint.DimensionalityError(unit,'inch', dim, '[length]')
-            else: raise TypeError("t_nom is not a Quanity['length'] or None")
+            else: raise TypeError("t_nom is not a Quanity['length'] or None.")
             
         if t_min < Q_(0,'inch'): raise ValueError("Actual thickness cannot be less than zero.")
 
@@ -80,6 +104,17 @@ class GlassPly:
     @classmethod
     @ureg.check(None, '[length]')
     def from_nominal_thickness(cls, t_nom):
+        """Class method to creating a GlassPly with a nominal thickness.
+
+        Parameters
+        ----------
+        t_nom : Quantity [length]
+            Nominal thickness.
+
+        Returns
+        -------
+        GlassPly
+        """
         t_min = cls._find_min_from_nom(t_nom)
         print(t_nom)
         print(t_min)
@@ -88,6 +123,17 @@ class GlassPly:
     @classmethod
     @ureg.check(None, '[length]')
     def from_actual_thickness(cls, t_act):
+        """Class method to creating a GlassPly with an actual thickness.
+
+        Parameters
+        ----------
+        t_act : Quantity [length]
+            Actual thickness.
+
+        Returns
+        -------
+        GlassPly
+        """
         return cls(t_act)
 
     @staticmethod
@@ -103,32 +149,86 @@ class GlassPly:
 
     @property
     def E(self):
+        """Get the elastic modulus.
+
+        Returns
+        -------
+        Quantity [pressure]
+        """
         return self._E
     
     @E.setter
     @ureg.check(None, '[pressure]')
     def E(self, value):
+        """Set the elastic modulus.
+
+        Parameters
+        ----------
+        value : Quantity [pressure]
+            Elastic modulus
+
+        Raises
+        ------
+        ValueError
+            Elastic modulus cannot be less than 0MPa.
+        """
         if value < Q_(0,'MPa'): raise ValueError("Elastic modulus cannot be less than zero.")
         self._E = value
     
     @property
     def t_nom(self):
+        """Get the nominal thickness.
+
+        Returns
+        -------
+        Quantity [length]
+        """
         return self._t_nom
     
     @t_nom.setter
     @ureg.check(None, '[length]')
     def t_nom(self, value):
+        """Set the nominal thickness.
+
+        Parameters
+        ----------
+        value : Quantity [length]
+            Nominal thickness
+
+        Raises
+        ------
+        ValueError
+            Nominal thickness cannot be less than zero.
+        """
         if value < Q_(0,'inch'): raise ValueError("Nominal thickness cannot be less than zero.")
         self._t_nom = value
         self._t_min = self._find_min_from_nom(value)
 
     @property
     def t_min(self):
+        """Get the minimum thickness.
+
+        Returns
+        -------
+        Quantity [length]
+        """
         return self._t_min
     
     @t_min.setter
     @ureg.check(None, '[length]')
     def t_min(self, value):
+        """Set the minimum thickness.
+
+        Parameters
+        ----------
+        value : Quantity [length]
+            Minimum thickness
+
+        Raises
+        ------
+        ValueError
+            Actual thickness cannot be less than zero.
+        """
         if value < Q_(0,'inch'): raise ValueError("Actual thickness cannot be less than zero.")
         self._t_min = value
         self._t_nom = None
@@ -138,28 +238,28 @@ class GlassPly:
 
 class InterLayer:
     """
-        A class to represent a glass interlayer(e.g. PVB or SG), and its mechanical properties. 
-        Rate dependent properties can be considered via the use of a product table or registered product name
+    A class to represent a glass interlayer(e.g. PVB or SG), and its mechanical properties. 
+    Rate dependent properties can be considered via the use of a product table or registered product name
 
-        ...
+    ...
 
-        Attributes
-        ----------
-        t : Quantity [length]
-            thickness
-        G : Quantity [pressure]
-            Shear modulus
-        temperature: Quantity [temperature]
-            The load case temperature, if a product table is used.
-        duration:
-            The load case duration, if a product table is used.
+    Attributes
+    ----------
+    t : Quantity [length]
+        thickness
+    G : Quantity [pressure]
+        Shear modulus
+    temperature: Quantity [temperature]
+        The load case temperature, if a product table is used.
+    duration:
+        The load case duration, if a product table is used.
 
-        Methods
-        -------
-        from_product_table(t, product_name):
-            Class method to creating a interlayer with a registered product name
-        from_static(t, G):
-            Class method to creating a interlayer with a static shear modulus value
+    Methods
+    -------
+    from_product_table(t, product_name):
+        Class method to creating a interlayer with a registered product name
+    from_static(t, G):
+        Class method to creating a interlayer with a static shear modulus value
     """
     def __init__(self, t, **kwargs):
         """[summary]
