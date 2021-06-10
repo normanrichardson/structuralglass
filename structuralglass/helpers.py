@@ -32,7 +32,7 @@ class Roarks4side:
         Calculates the plates max reaction.
     """
 
-    @ureg.check(None, '[length]','[length]','[pressure]', '[length]')
+    @ureg.check(None, '[pressure]', '[length]','[length]', '[length]')
     def __init__(self, E, dim_x, dim_y, t=Q_(1,"inch")):
         """Constructor
         Parameters

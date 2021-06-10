@@ -12,54 +12,45 @@ class TestGlassPly(unittest.TestCase):
     def test_from_nominal_thickness_metric(self):
         tnom = 8*ureg.mm
         tmin = lay.t_min_lookup_metric[tnom.to(ureg.mm).magnitude]*ureg.mm
-        glassType = "FT"
-        ply = lay.GlassPly.from_nominal_thickness(tnom,glassType)
+        ply = lay.GlassPly.from_nominal_thickness(tnom)
         self.assertIsInstance(ply,lay.GlassPly)
         self.assertEqual(ply.t_nom, tnom)
         self.assertEqual(ply.t_min, tmin)
         self.assertEqual(ply.E, 71.7 * ureg.GPa)
-        self.assertEqual(ply.glassType, glassType)
 
     def test_from_nominal_thickness_imperial(self):
         tnom = 3/8*ureg.inch
         tmin = lay.t_min_lookup_imperial[tnom.to(ureg.inch).magnitude]*ureg.mm
-        glassType = "FT"
-        ply = lay.GlassPly.from_nominal_thickness(tnom,glassType)
+        ply = lay.GlassPly.from_nominal_thickness(tnom)
         self.assertIsInstance(ply,lay.GlassPly)
         self.assertEqual(ply.t_nom, tnom)
         self.assertEqual(ply.t_min, tmin)
         self.assertEqual(ply.E, 71.7 * ureg.GPa)
-        self.assertEqual(ply.glassType, glassType)
 
     def test_from_actual_thickness(self):
         tmin = 8*ureg.mm
-        glassType = "AN"
-        ply = lay.GlassPly.from_actual_thickness(tmin,glassType)
+        ply = lay.GlassPly.from_actual_thickness(tmin)
         self.assertIsInstance(ply,lay.GlassPly)
         self.assertIsNone(ply.t_nom)
         self.assertEqual(ply.t_min, tmin)
         self.assertEqual(ply.E, 71.7 * ureg.GPa)
-        self.assertEqual(ply.glassType, glassType)
 
     def test_invalid_lookup_from_nominal_thickness(self):
         tnom = 8.5*ureg.mm
-        glassType = "FT"
         with self.assertRaises(ValueError) as cm:
-            ply = lay.GlassPly.from_nominal_thickness(tnom,glassType)
+            ply = lay.GlassPly.from_nominal_thickness(tnom)
         self.assertEqual(str(cm.exception), "Could not find the nominal tickness of {0} in the nominal thickness lookup.".format(tnom))
         
     def test_invalid_no_unit_from_nominal_thickness(self):
         tnom = 8
-        glassType = "FT"
         with self.assertRaises(pint.DimensionalityError) as cm:
-            ply = lay.GlassPly.from_nominal_thickness(tnom,glassType)
+            ply = lay.GlassPly.from_nominal_thickness(tnom)
         self.assertEqual(str(cm.exception), "Cannot convert from '8' (dimensionless) to 'a quantity of' ([length])")
 
     def test_invalid_unit_from_nominal_thickness(self):
         tnom = 8*ureg.mm**2
-        glassType = "FT"
         with self.assertRaises(pint.DimensionalityError) as cm:
-            ply = lay.GlassPly.from_nominal_thickness(tnom,glassType)
+            ply = lay.GlassPly.from_nominal_thickness(tnom)
         self.assertEqual(str(cm.exception), "Cannot convert from '8 millimeter ** 2' ([length] ** 2) to 'a quantity of' ([length])")
 
 class TestInterLayerStatic(unittest.TestCase):
@@ -169,9 +160,8 @@ class TestMonolithicMethod(unittest.TestCase):
     def setUp(self):
         self.t1nom = 8*ureg.mm
         self.t2nom = 10*ureg.mm
-        glassType = "FT"
-        self.ply1 = lay.GlassPly.from_nominal_thickness(self.t1nom,glassType)
-        self.ply2 = lay.GlassPly.from_nominal_thickness(self.t2nom,glassType)
+        self.ply1 = lay.GlassPly.from_nominal_thickness(self.t1nom)
+        self.ply2 = lay.GlassPly.from_nominal_thickness(self.t2nom)
         package = [self.ply1,self.ply2]
         self.buildup = [et.MonolithicMethod(package)]
     
@@ -190,10 +180,9 @@ class TestNonCompositeMethod(unittest.TestCase):
         self.t1nom = 8*ureg.mm
         self.t2nom = 6*ureg.mm
         self.t3nom = 8*ureg.mm
-        glassType = "AN"
-        self.ply1 = lay.GlassPly.from_nominal_thickness(self.t1nom,glassType)
-        self.ply2 = lay.GlassPly.from_nominal_thickness(self.t2nom,glassType)
-        self.ply3 = lay.GlassPly.from_nominal_thickness(self.t2nom,glassType)
+        self.ply1 = lay.GlassPly.from_nominal_thickness(self.t1nom)
+        self.ply2 = lay.GlassPly.from_nominal_thickness(self.t2nom)
+        self.ply3 = lay.GlassPly.from_nominal_thickness(self.t2nom)
         package = [self.ply1,self.ply2,self.ply3]
         self.buildup = [et.NonCompositeMethod(package)]
     
@@ -212,9 +201,8 @@ class TestShearTransferCoefMethod(unittest.TestCase):
         self.t2nom = 6*ureg.mm
         G_pvb = 0.44*ureg.MPa
         t_pvb = 1.52*ureg.mm
-        glassType = "FT"
-        self.ply1 = lay.GlassPly.from_nominal_thickness(self.t1nom,glassType)
-        self.ply2 = lay.GlassPly.from_nominal_thickness(self.t2nom,glassType)
+        self.ply1 = lay.GlassPly.from_nominal_thickness(self.t1nom)
+        self.ply2 = lay.GlassPly.from_nominal_thickness(self.t2nom)
         self.interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
         package = [self.ply1, self.interlayer, self.ply2]
         self.buildup = [et.ShearTransferCoefMethod(package, self.a)]
@@ -231,7 +219,7 @@ class TestShearTransferCoefMethod(unittest.TestCase):
     
     def test_invalid_packages(self):
         # invalid package
-        ply3 = lay.GlassPly.from_nominal_thickness(self.t1nom, "FT")
+        ply3 = lay.GlassPly.from_nominal_thickness(self.t1nom)
         pac_invalid_1 = [self.ply1, self.ply2]
         pac_invalid_2 = [self.ply1, self.ply2, self.interlayer]
         pac_invalid_3 = [self.ply1, self.interlayer, self.ply2, self.interlayer, ply3]
@@ -301,7 +289,7 @@ class TestFullyTemperedGlassType(unittest.TestCase):
 
 class TestRoarks4sidePlate(unittest.TestCase):
     def setUp(self):
-        self.rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        self.rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
     def test_data(self):
         self.assertEqual(self.rk4s.dim_x, Q_(5, "ft"))
         self.assertEqual(self.rk4s.dim_y, Q_(10, "ft"))
@@ -321,37 +309,37 @@ class TestRoarks4sidePlate(unittest.TestCase):
 class TestRoarks4sidePlateInvalid(unittest.TestCase):
     def test_invalid_dimension_1(self):
         with self.assertRaises(ValueError) as cm:
-            rk4s = hp.Roarks4side(Q_(-5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+            rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(-5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
         self.assertEqual(str(cm.exception), "Dimensions must be greater than zero.")
     def test_invalid_dimension_2(self):
         with self.assertRaises(ValueError) as cm:
-            rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(-10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+            rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(-10,"ft"), Q_(0.5, "inch"), )
         self.assertEqual(str(cm.exception), "Dimensions must be greater than zero.")
     def test_invalid_thickness(self):
         with self.assertRaises(ValueError) as cm:
-            rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(-0.5, "inch"), Q_(71.7, 'GPa'))
+            rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(-0.5, "inch"))
         self.assertEqual(str(cm.exception), "Thickness must be greater than zero.")
     def test_invalid_elastic_mod(self):
         with self.assertRaises(ValueError) as cm:
-            rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(-71.7, 'GPa'))
+            rk4s = hp.Roarks4side(Q_(-71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
         self.assertEqual(str(cm.exception), "Elastic modulus must be greater than zero.")
     def test_invalid_dimension_prop_1(self):
-        rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
         with self.assertRaises(ValueError) as cm:
             rk4s.dim_x = Q_(-10,"ft")
         self.assertEqual(str(cm.exception), "Dimensions must be greater than zero.")
     def test_invalid_dimension_prop_2(self):
-        rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
         with self.assertRaises(ValueError) as cm:
             rk4s.dim_y = Q_(-5,"ft")
         self.assertEqual(str(cm.exception), "Dimensions must be greater than zero.")
     def test_invalid_thickness_prop(self):
-        rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
         with self.assertRaises(ValueError) as cm:
             rk4s.t = Q_(-0.75,"inch")
         self.assertEqual(str(cm.exception), "Thickness must be greater than zero.")
     def test_invalid_elastic_mod_prop(self):
-        rk4s = hp.Roarks4side(Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), Q_(71.7, 'GPa'))
+        rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"), )
         with self.assertRaises(ValueError) as cm:
             rk4s.E = Q_(-200,'GPa')
         self.assertEqual(str(cm.exception), "Elastic modulus must be greater than zero.")

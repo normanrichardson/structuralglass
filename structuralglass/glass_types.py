@@ -203,7 +203,7 @@ class GlassType:
         ValueError
             The duration factor cannot be less than 0.
         """
-        if value < Q_(0, "MPa"): raise ValueError("The base allowable edge stress cannot be less than zero.")
+        if value < 0: raise ValueError("The duration factor cannot be less than 0.")
         self._duration_factor = value
     
     @property

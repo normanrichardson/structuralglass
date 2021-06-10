@@ -126,7 +126,7 @@ class NonCompositeMethod(GlassLiteEquiv):
         if len(set_E) != 1: raise ValueError("The plys must have the same elastic modulus.")
         E = list(set_E)[0]
 
-        super(NonCompositeMethod, self).__init__(plys)
+        super(NonCompositeMethod, self).__init__(E,plys)
         self.calcEquivThickness()
 
     def calcEquivThickness(self):

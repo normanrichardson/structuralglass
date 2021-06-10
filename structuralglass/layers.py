@@ -116,8 +116,6 @@ class GlassPly:
         GlassPly
         """
         t_min = cls._find_min_from_nom(t_nom)
-        print(t_nom)
-        print(t_min)
         return cls(t_min,t_nom)
     
     @classmethod
