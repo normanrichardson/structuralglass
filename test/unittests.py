@@ -224,17 +224,17 @@ class TestShearTransferCoefMethod(unittest.TestCase):
         pac_invalid_2 = [self.ply1, self.ply2, self.interlayer]
         pac_invalid_3 = [self.ply1, self.interlayer, self.ply2, self.interlayer, ply3]
 
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(ValueError) as cm:
             buildup = [et.ShearTransferCoefMethod(pac_invalid_1,self.a)]
-        self.assertEqual(str(cm.exception), "Method is only valid for 2 ply glass laminates")
+        self.assertEqual(str(cm.exception), "Ply validation failed: Method is only valid a list of [GlassPly, Interlayer, GlassPly].")
 
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(ValueError) as cm:
             buildup = [et.ShearTransferCoefMethod(pac_invalid_2,self.a)]
-        self.assertEqual(str(cm.exception), "Method is only valid for 2 ply glass laminates")
+        self.assertEqual(str(cm.exception), "Ply validation failed: Method is only valid a list of [GlassPly, Interlayer, GlassPly].")
 
-        with self.assertRaises(AssertionError) as cm:
+        with self.assertRaises(ValueError) as cm:
             buildup = [et.ShearTransferCoefMethod(pac_invalid_3,self.a)]
-        self.assertEqual(str(cm.exception), "Method is only valid for 2 ply glass laminates")
+        self.assertEqual(str(cm.exception), "Ply validation failed: Method is only valid a list of [GlassPly, Interlayer, GlassPly].")
 
 
 class TestAnnealedGlassType(unittest.TestCase):

@@ -16,8 +16,8 @@ t_pvb = 1.52*ureg.mm
 interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
 
 # Plys
-ply1 = lay.GlassPly.from_nominal_thickness(t1nom,"FT")
-ply2 = lay.GlassPly.from_nominal_thickness(t2nom,"FT")
+ply1 = lay.GlassPly.from_nominal_thickness(t1nom)
+ply2 = lay.GlassPly.from_nominal_thickness(t2nom)
 
 # Package specifying the model type
 package = et.ShearTransferCoefMethod([ply1,interlayer, ply2],a)

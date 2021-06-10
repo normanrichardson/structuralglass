@@ -32,9 +32,9 @@ allow_stress = ft.prob_breakage_factor(1/1000) \
 defl_max = min(a,b)/75
 
 # Plys
-ply1 = lay.GlassPly.from_nominal_thickness(t1nom,"FT")
-ply2 = lay.GlassPly.from_nominal_thickness(t2nom,"FT")
-ply3 = lay.GlassPly.from_nominal_thickness(t3nom,"FT")
+ply1 = lay.GlassPly.from_nominal_thickness(t1nom)
+ply2 = lay.GlassPly.from_nominal_thickness(t2nom)
+ply3 = lay.GlassPly.from_nominal_thickness(t3nom)
 
 # Package specifying the model type
 package1 = et.MonolithicMethod([ply1, ply2])

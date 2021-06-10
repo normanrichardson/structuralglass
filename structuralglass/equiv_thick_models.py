@@ -1,47 +1,93 @@
 import abc
 import itertools
+
+from numpy.lib.function_base import place
 from . import ureg, Q_
 from .layers import GlassPly, InterLayer
 
 class GlassLiteEquiv:
     """
-        An abstract class to represent the mechanical behavior of a liminate.
-        Unique formulations of the mechanical behaviour are derived from this class.
+    An abstract class to represent the mechanical behavior of a liminate.
+    Unique formulations of the mechanical behaviour are derived from this class.
 
-        ...
+    ...
 
-        Attributes
-        ----------
-        ply: List[GlassPly and InterLayer (optional)]
-            The list of glass layers and interlayers that form a laminate.
-        h_efw : Quantity [length]
-            The equivlant laminate thickness for displacement.
-        h_efs : Dict[GlassPly, Quantity [length]]
-            The equivlant laminate thickness for the stress in the associated ply.
-        Methods
-        -------
-        __init__(plys):
-            Constructor for a liminate's behaviour.
-        calcEquivThickness()
-            Abstract method that sets h_efw and h_efs for that formulation.
+    Attributes
+    ----------
+    ply: List[GlassPly and InterLayer (optional)]
+        The list of glass layers and interlayers that form a laminate.
+    h_efw : Quantity [length]
+        The equivlant laminate thickness for displacement.
+    h_efs : Dict[GlassPly, Quantity [length]]
+        The equivlant laminate thickness for the stress in the associated ply.
+    Methods
+    -------
+    calcEquivThickness()
+        Abstract method that sets h_efw and h_efs for that formulation.
     """
     __metaclass__ = abc.ABCMeta
-    def __init__(self, E, ply):
+    def __init__(self, ply):
         """
             Args:
                 ply (List[GlassPly and InterLayer]): The list of glass layers and interlayers that form a laminate.
         """
-        self.h_efw = None
-        self.h_efs = None
-        self.E = E
+        self._h_efw = None
+        self._h_efs = None
+        self._E = None
         self.ply = ply
 
     @abc.abstractmethod
-    def calcEquivThickness(self):
+    def _calc_equiv_thickness(self):
         """
-            Abstract method to determine the equivalent thicknesses
+            Abstract method to determine the equivalent thicknesses.
         """
         return
+
+    @abc.abstractmethod
+    def _validate(self, plys):
+        """Abstract method to valadate the plys.
+
+        Parameters
+        ----------
+        plys : List[GlassPly and InterLayer (optional)]
+        
+        Returns
+        -------
+        Tuple (bool, msg)
+            True for a valid formulation. A mesage for an error.
+        """
+        return 
+
+    @abc.abstractmethod
+    def _determine_package_E(self):
+        """Abstract method to determine the packages eleactic modulus.
+        """
+        return
+
+    @property
+    def h_efw(self):
+        return self._h_efw
+
+    @property
+    def h_efs(self):
+        return self._h_efs
+
+    @property
+    def ply(self):
+        return self._ply
+
+    @property
+    def E(self):
+        return self._E
+
+    @ply.setter
+    def ply(self, value):
+        valid, msg = self._validate(value)
+        if not valid: raise ValueError(f"Ply validation failed: {msg}")
+        self._ply = value
+        self._determine_package_E()
+        self._calc_equiv_thickness()
+
 
 class MonolithicMethod(GlassLiteEquiv):
     """
@@ -73,21 +119,30 @@ class MonolithicMethod(GlassLiteEquiv):
             Args:
                 plys (List[GlassPly]): The list of glass layers that form a laminate.
         """
+        super(MonolithicMethod, self).__init__(plys)
 
-        # check the elastic modulus of all plys is the same
-        set_E = set([ii.E for ii in plys])
-        if len(set_E) != 1: raise ValueError("The plys must have the same elastic modulus.")
-        E = list(set_E)[0]
-
-        super(MonolithicMethod, self).__init__(E, plys)
-        self.calcEquivThickness()
-
-    def calcEquivThickness(self):
+    def _calc_equiv_thickness(self):
         """
             Method that calculates the effective thicknesses.
         """
-        self.h_efw = sum((ii.t_min for ii in self.ply))
-        self.h_efs = dict(zip(self.ply,itertools.repeat(self.h_efw,len(self.ply))))
+        self._h_efw = sum((ii.t_min for ii in self._ply))
+        self._h_efs = dict(zip(self._ply,itertools.repeat(self.h_efw,len(self._ply))))
+
+    def _determine_package_E(self):
+        # check the elastic modulus of all plys is the same
+        self._E = self.ply[0].E
+
+    def _validate(self, plys):
+        msg = ""
+        valid = all((isinstance(ii,GlassPly) for ii in plys))
+        if valid:
+            set_E = set([ii.E for ii in plys])
+            valid = len(set_E) == 1
+            if not valid:
+                msg = "The plys must have the same elastic modulus." if not valid else ""
+        else:
+            msg = "Method is only formulated for a list of GlassPly."        
+        return valid, msg
 
 class NonCompositeMethod(GlassLiteEquiv):
     """
@@ -120,23 +175,31 @@ class NonCompositeMethod(GlassLiteEquiv):
             Args:
                 plys (List[GlassPly]): The list of glass layers that form a laminate.
         """
+        super(NonCompositeMethod, self).__init__(plys)
 
-        # check the elastic modulus of all plys is the same
-        set_E = set([ii.E for ii in plys])
-        if len(set_E) != 1: raise ValueError("The plys must have the same elastic modulus.")
-        E = list(set_E)[0]
-
-        super(NonCompositeMethod, self).__init__(E,plys)
-        self.calcEquivThickness()
-
-    def calcEquivThickness(self):
+    def _calc_equiv_thickness(self):
         """
             Method that calculates the effective thicknesses.
         """
         func = lambda n: sum(ii.t_min**n for ii in self.ply)**(1/n)
-        self.h_efs = dict(zip(self.ply, itertools.repeat(func(2),len(self.ply))))
-        self.h_efw = func(3)
+        self._h_efs = dict(zip(self.ply, itertools.repeat(func(2),len(self.ply))))
+        self._h_efw = func(3)
 
+    def _determine_package_E(self):
+        self._E = self.ply[0].E
+
+    def _validate(self, plys):
+        msg = ""
+        valid = all((isinstance(ii,GlassPly) for ii in plys))
+        if valid:
+            set_E = set([ii.E for ii in plys])
+            valid = len(set_E) == 1
+            if not valid:
+                msg = "The plys must have the same elastic modulus." if not valid else ""
+        else:
+            msg = "Method is only formulated for a list of GlassPly."        
+        return valid, msg
+        
 class ShearTransferCoefMethod(GlassLiteEquiv):
     """
         A mechanical behavior that takes the shear modulus of the laminate into consideration.
@@ -163,8 +226,7 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         validlite(plys):
             Method that validates that the laminate does not violate the models limitations (in terms of number of layers and layer types).
     """
-    beta = 9.6
-    def __init__(self, plys, a):
+    def __init__(self, plys, panel_min_dim):
         """
             Constructor for a liminate's behaviour.
 
@@ -172,26 +234,26 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
                 plys (List[GlassPly and InterLayer]): The list of glass layers and InterLayers that form a laminate.
                 a (Quantity [length]): Minimum dimension of the rectangular panel
         """
-        assert self.validlite(plys), "Method is only valid for 2 ply glass laminates"
+        self.panel_min_dim = panel_min_dim
+        self.beta = 9.6
+        super(ShearTransferCoefMethod, self).__init__(plys)
 
-        # check the elastic modulus of all plys is the same
-        set_E =set([plys[0].E, plys[2].E])
-        if len(set_E) != 1: raise ValueError("The plys must have the same elastic modulus.")
-        E = list(set_E)[0]
-
-        super(ShearTransferCoefMethod, self).__init__(E,plys)
-        self.panelMinLen = a
-        self.calcEquivThickness()
-
-    def validlite(self, plys):
+    def _validate(self, plys):
+        valid, msg = False, ""
         if len(plys)==3:
             if isinstance(plys[0],GlassPly):
                 if isinstance(plys[2],GlassPly):
                     if isinstance(plys[1],InterLayer):
-                        return True
-        return False
+                        valid = True
+        if valid:
+            set_E =set([plys[0].E, plys[2].E])
+            if len(set_E) != 1:
+                msg = "The plys must have the same elastic modulus."
+        else:
+            msg = "Method is only valid a list of [GlassPly, Interlayer, GlassPly]."
+        return valid, msg
 
-    def calcEquivThickness(self):
+    def _calc_equiv_thickness(self):
         """
             Method that calculates the effective thicknesses.
         """
@@ -204,11 +266,31 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         h_s1 = h_s*h_1/(h_1+h_2)
         h_s2 = h_s*h_2/(h_1+h_2)
         I_s = h_1*h_s2**2 + h_2*h_s1**2
-        self.Gamma = 1.0 / (1.0 + self.beta*E_glass*I_s*h_v / (G_interlayer * h_s**2 * self.panelMinLen**2))
-        self.h_efw = (h_1**3 + h_2**3 + 12*self.Gamma*I_s)**(1/3.0)
-        self.h_efs = {}
-        self.h_efs [self.ply[0]] = (self.h_efw**3/(h_1+2*self.Gamma*h_s2))**(0.5)
-        self.h_efs [self.ply[2]] = (self.h_efw**3/(h_2+2*self.Gamma*h_s1))**(0.5)
+        self.Gamma = 1.0 / (1.0 + self.beta*E_glass*I_s*h_v / (G_interlayer * h_s**2 * self.panel_min_dim**2))
+        self._h_efw = (h_1**3 + h_2**3 + 12*self.Gamma*I_s)**(1/3.0)
+        self._h_efs = {}
+        self._h_efs [self.ply[0]] = (self.h_efw**3/(h_1+2*self.Gamma*h_s2))**(0.5)
+        self._h_efs [self.ply[2]] = (self.h_efw**3/(h_2+2*self.Gamma*h_s1))**(0.5)
+    
+    def _determine_package_E(self):
+        # check the elastic modulus of all plys is the same
+        return self.ply[0].E
 
+    @property
+    def beta(self):
+        return self._beta
 
+    @beta.setter
+    def beta(self,value):
+        self._beta = value
 
+    @property
+    def panel_min_dim(self):
+        return self._panel_min_dim
+    
+    @panel_min_dim.setter
+    @ureg.check(None,'[length]')
+    def panel_min_dim(self,value):
+        if value < Q_(0,"ft"): raise ValueError("The minimum panel dimension must be greater than 0ft")
+        self._panel_min_dim = value 
+        
