@@ -21,6 +21,7 @@ class GlassType:
     surf_factors : Dict [string, float]
         The allowable stress reduction factor for different surface treatments.
         e.g. "Acid etching" can reduce the allowable stress by 0.5  
+    
     Methods
     -------
     load_duration_factor(time = 3*ureg.sec)
@@ -36,6 +37,7 @@ class GlassType:
         Looks up the reduction associated with a surface treatment
     """
     __metaclass__ = abc.ABCMeta
+    @ureg.check(None, '[pressure]', '[pressure]', None, None, None)
     def __init__(self, stress_surface, stress_edge, duration_factor, surf_factors, coef_variation = 0.2):
         """Abstract class constructor
 
@@ -51,9 +53,9 @@ class GlassType:
                 The allowable stress reduction factor for different surface treatments.
                 e.g. "Acid etching" can reduce the allowable stress by 0.5 
             coef_variation  : float, optional 
-            The coefficient of variation for the glass type. 
-            This factor describes the statistical behavior of the failure stress.
-            By default 0.2.
+                The coefficient of variation for the glass type. 
+                This factor describes the statistical behavior of the failure stress.
+                By default 0.2.
         """        
         self.stress_surface = stress_surface
         self.stress_edge = stress_edge
@@ -75,6 +77,7 @@ class GlassType:
             Load duration factor to apply to the base stress.
         """         
         return 1 / ((time/(3*ureg.sec))**(1/self.duration_factor))
+
     def design_factor(self, ratio):
         """Determines the design factor for the glass type based on a given failure 
         ratio (e.g. 1/1000). This can be used to convert the average breaking stress
@@ -91,6 +94,7 @@ class GlassType:
             The design factor for the glass type.
         """
         return 1 / ( 1 - self.coef_variation*ss.norm.ppf(1-ratio) )
+
     def prob_breakage_factor(self, ratio):
         """Determines the probability of breakage factor for the glass type based 
         on a given failure ratio (e.g. 1/1000).
@@ -106,6 +110,7 @@ class GlassType:
             Probability of breakage factor to apply to the base stress.
         """
         return self.design_factor(0.008) / self.design_factor(ratio)
+
     def surf_treat_factor(self, surf_treat):
         """Looks up the reduction associated with a surface treatment
 
@@ -120,7 +125,127 @@ class GlassType:
             Surface treatment factor to apply to the base stress.
         """
         return self.surf_factors[surf_treat]
-        
+
+    @property
+    def stress_surface(self):
+        """Get base allowable surface stress.
+
+        Returns
+        -------
+        Quantity [pressure]
+        """
+        return self._stress_surface
+    
+    @stress_surface.setter
+    @ureg.check(None, '[pressure]')
+    def stress_surface(self, value):
+        """Set base allowable surface stress.
+
+        Parameters
+        ----------
+        value : Quantity [pressure]
+
+        Raises
+        ------
+        ValueError
+            The base allowable surface stress cannot be less than 0MPa.
+        """
+        if value < Q_(0, "MPa"): raise ValueError("The base allowable surface stress cannot be less than zero.")
+        self._stress_surface = value
+
+    @property
+    def stress_edge(self):
+        """Get base allowable edge stress.
+
+        Returns
+        -------
+        Quantity [pressure]
+        """
+        return self._stress_edge
+    
+    @stress_edge.setter
+    @ureg.check(None, '[pressure]')
+    def stress_edge(self, value):
+        """Set base allowable edge stress.
+
+        Parameters
+        ----------
+        value : Quantity [pressure]
+
+        Raises
+        ------
+        ValueError
+            The base allowable edge stress cannot be less than 0MPa.
+        """
+        if value < Q_(0, "MPa"): raise ValueError("The base allowable edge stress cannot be less than zero.")
+        self._stress_edge = value
+
+    @property
+    def duration_factor(self):
+        """Get the duration factor.
+
+        Returns
+        -------
+        float
+        """
+        return self._duration_factor
+
+    @duration_factor.setter
+    def duration_factor(self, value):
+        """Set the duration factor.
+
+        Parameters
+        ----------
+        value : float
+
+        Raises
+        ------
+        ValueError
+            The duration factor cannot be less than 0.
+        """
+        if value < Q_(0, "MPa"): raise ValueError("The base allowable edge stress cannot be less than zero.")
+        self._duration_factor = value
+    
+    @property
+    def coef_variation(self):
+        """Get the coefficient of variation.
+
+        Returns
+        -------
+        float
+        """
+        return self._coef_variation
+
+    @coef_variation.setter
+    def coef_variation(self, value):
+        """Set the coefficient of variation.
+
+        Parameters
+        ----------
+        value : float
+        """
+        self._coef_variation = value
+
+    @property
+    def surf_factors(self):
+        """Get the allowable stress reduction factor for different surface treatments.
+
+        Returns
+        -------
+        dict(string, float)
+        """
+        return self._surf_factors
+
+    @surf_factors.setter
+    def surf_factors(self, value):
+        """Set the allowable stress reduction factor for different surface treatments.
+
+        Parameters
+        ----------
+        value : float
+        """
+        self._surf_factors = value
+
 class Annealed(GlassType):
     """Annealed glass type.
     """
