@@ -314,7 +314,7 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         panel_min_dim : Quantity [length]
             Minimum dimension of the rectangular panel
         """        
-        self.panel_min_dim = panel_min_dim
+        self._panel_min_dim = panel_min_dim
         self.beta = 9.6
         super(ShearTransferCoefMethod, self).__init__(plys)
 
