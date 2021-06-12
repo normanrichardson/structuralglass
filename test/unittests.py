@@ -38,19 +38,19 @@ class TestGlassPly(unittest.TestCase):
     def test_invalid_lookup_from_nominal_thickness(self):
         tnom = 8.5*ureg.mm
         with self.assertRaises(ValueError) as cm:
-            ply = lay.GlassPly.from_nominal_thickness(tnom)
+            lay.GlassPly.from_nominal_thickness(tnom)
         self.assertEqual(str(cm.exception), "Could not find the nominal tickness of {0} in the nominal thickness lookup.".format(tnom))
         
     def test_invalid_no_unit_from_nominal_thickness(self):
         tnom = 8
         with self.assertRaises(pint.DimensionalityError) as cm:
-            ply = lay.GlassPly.from_nominal_thickness(tnom)
+            lay.GlassPly.from_nominal_thickness(tnom)
         self.assertEqual(str(cm.exception), "Cannot convert from '8' (dimensionless) to 'a quantity of' ([length])")
 
     def test_invalid_unit_from_nominal_thickness(self):
         tnom = 8*ureg.mm**2
         with self.assertRaises(pint.DimensionalityError) as cm:
-            ply = lay.GlassPly.from_nominal_thickness(tnom)
+            lay.GlassPly.from_nominal_thickness(tnom)
         self.assertEqual(str(cm.exception), "Cannot convert from '8 millimeter ** 2' ([length] ** 2) to 'a quantity of' ([length])")
 
 class TestInterLayerStatic(unittest.TestCase):
@@ -67,12 +67,12 @@ class TestInterLayerStatic(unittest.TestCase):
         
     def test_invalid_request_for_duration(self):    
         with self.assertRaises(ValueError) as cm:
-            duration = self.interlayer.duration
+            self.interlayer.duration
         self.assertEqual(str(cm.exception), "No product table provided. Static case being used.")
 
     def test_invalid_request_for_temperature(self):
         with self.assertRaises(ValueError) as cm:
-            temperature = self.interlayer.temperature
+            self.interlayer.temperature
         self.assertEqual(str(cm.exception), "No product table provided. Static case being used.")
 
 class TestInterlayerProductRegistration(unittest.TestCase):
@@ -120,14 +120,14 @@ class TestInterLayerProductTable(unittest.TestCase):
         self.interlayer.duration = Q_(1,"month")
         self.assertEqual(self.interlayer.t, self.t_pvb)
         with self.assertRaises(ValueError) as cm:
-            G = self.interlayer.G
+            self.interlayer.G
         self.assertEqual(str(cm.exception), "Reference temperature and/or duration not test.")
 
     def test_not_setting_ref_duration(self):
         self.interlayer.temperature = Q_(40,"degC")
         self.assertEqual(self.interlayer.t, self.t_pvb)
         with self.assertRaises(ValueError) as cm:
-            G = self.interlayer.G
+            self.interlayer.G
         self.assertEqual(str(cm.exception), "Reference temperature and/or duration not test.")
 
 class TestInvalidInterLayerClassMethods(unittest.TestCase):
@@ -135,25 +135,25 @@ class TestInvalidInterLayerClassMethods(unittest.TestCase):
         t_pvb = 1.52*ureg.mm
         product_name = "product 1"
         with self.assertRaises(ValueError) as cm:
-            interlayer = lay.InterLayer.from_product_table(t_pvb, product_name)
+            lay.InterLayer.from_product_table(t_pvb, product_name)
         self.assertEqual(str(cm.exception), "The product is not registered in the product registry.")
     def test_invalid_product_thickness(self):
         t_pvb = -1.52*ureg.mm
         product_name = "PVB NCSEA"
         with self.assertRaises(ValueError) as cm:
-            interlayer = lay.InterLayer.from_product_table(t_pvb, product_name)
+            lay.InterLayer.from_product_table(t_pvb, product_name)
         self.assertEqual(str(cm.exception), "The thickness must be greater than zero [lengh].")
     def test_invalid_static_shear_mod(self):
         t_pvb = 1.52*ureg.mm
         G_pvb = -0.281*ureg.MPa
         with self.assertRaises(ValueError) as cm:
-            interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
+            lay.InterLayer.from_static(t_pvb, G_pvb)
         self.assertEqual(str(cm.exception), "The shear modulus must be greater than zero [pressure].")
     def test_invalid_static_thickness(self):
         t_pvb = -1.52*ureg.mm
         G_pvb = 0.281*ureg.MPa
         with self.assertRaises(ValueError) as cm:
-            interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
+            lay.InterLayer.from_static(t_pvb, G_pvb)
         self.assertEqual(str(cm.exception), "The thickness must be greater than zero [lengh].")
 
 class TestMonolithicMethod(unittest.TestCase):
@@ -225,17 +225,16 @@ class TestShearTransferCoefMethod(unittest.TestCase):
         pac_invalid_3 = [self.ply1, self.interlayer, self.ply2, self.interlayer, ply3]
 
         with self.assertRaises(ValueError) as cm:
-            buildup = [et.ShearTransferCoefMethod(pac_invalid_1,self.a)]
+            [et.ShearTransferCoefMethod(pac_invalid_1,self.a)]
         self.assertEqual(str(cm.exception), "Ply validation failed: Method is only valid a list of [GlassPly, Interlayer, GlassPly].")
 
         with self.assertRaises(ValueError) as cm:
-            buildup = [et.ShearTransferCoefMethod(pac_invalid_2,self.a)]
+            [et.ShearTransferCoefMethod(pac_invalid_2,self.a)]
         self.assertEqual(str(cm.exception), "Ply validation failed: Method is only valid a list of [GlassPly, Interlayer, GlassPly].")
 
         with self.assertRaises(ValueError) as cm:
-            buildup = [et.ShearTransferCoefMethod(pac_invalid_3,self.a)]
+            [et.ShearTransferCoefMethod(pac_invalid_3,self.a)]
         self.assertEqual(str(cm.exception), "Ply validation failed: Method is only valid a list of [GlassPly, Interlayer, GlassPly].")
-
 
 class TestAnnealedGlassType(unittest.TestCase):
     def setUp(self) -> None:
@@ -286,7 +285,6 @@ class TestFullyTemperedGlassType(unittest.TestCase):
     def test_surf_factors(self):
         self.assertAlmostEqual(self.ft.surf_factors["Acid etching"], 0.5)
         
-
 class TestRoarks4sidePlate(unittest.TestCase):
     def setUp(self):
         self.rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
@@ -309,19 +307,19 @@ class TestRoarks4sidePlate(unittest.TestCase):
 class TestRoarks4sidePlateInvalid(unittest.TestCase):
     def test_invalid_dimension_1(self):
         with self.assertRaises(ValueError) as cm:
-            rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(-5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
+            hp.Roarks4side(Q_(71.7, 'GPa'), Q_(-5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
         self.assertEqual(str(cm.exception), "Dimensions must be greater than zero.")
     def test_invalid_dimension_2(self):
         with self.assertRaises(ValueError) as cm:
-            rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(-10,"ft"), Q_(0.5, "inch"), )
+            hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(-10,"ft"), Q_(0.5, "inch"), )
         self.assertEqual(str(cm.exception), "Dimensions must be greater than zero.")
     def test_invalid_thickness(self):
         with self.assertRaises(ValueError) as cm:
-            rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(-0.5, "inch"))
+            hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(-0.5, "inch"))
         self.assertEqual(str(cm.exception), "Thickness must be greater than zero.")
     def test_invalid_elastic_mod(self):
         with self.assertRaises(ValueError) as cm:
-            rk4s = hp.Roarks4side(Q_(-71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
+            hp.Roarks4side(Q_(-71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
         self.assertEqual(str(cm.exception), "Elastic modulus must be greater than zero.")
     def test_invalid_dimension_prop_1(self):
         rk4s = hp.Roarks4side(Q_(71.7, 'GPa'), Q_(5, "ft"), Q_(10,"ft"), Q_(0.5, "inch"))
@@ -343,6 +341,52 @@ class TestRoarks4sidePlateInvalid(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             rk4s.E = Q_(-200,'GPa')
         self.assertEqual(str(cm.exception), "Elastic modulus must be greater than zero.")
+
+class TestIGUWindDemands(unittest.TestCase):
+    def setUp(self):
+        self.dim_x = Q_(4000, "mm")
+        self.dim_y = Q_(2000, "mm")
+        t1nom = Q_(6, "mm")
+        t2nom = Q_(6, "mm")
+        t3nom = Q_(6, "mm")
+
+        # Panel force
+        self.wind_load = Q_(1.436, "kPa")
+
+        # Plys
+        self.ply1 = lay.GlassPly.from_nominal_thickness(t1nom)
+        self.ply2 = lay.GlassPly.from_nominal_thickness(t2nom)
+        self.ply3 = lay.GlassPly.from_nominal_thickness(t3nom)
+
+        # Package specifying the model type
+        self.package1 = et.MonolithicMethod([self.ply1, self.ply2])
+        self.package2 = et.MonolithicMethod([self.ply3])
+        buildup = [self.package1, self.package2]
+
+        # Panel
+        self.panel = dem.IGUWindDemands(buildup, self.wind_load, self.dim_x , self.dim_y)
+        self.panel.solve()
+    
+    def test_data(self):
+        self.panel.dim_x
+        self.assertListEqual(self.panel.buildup, [self.package1, self.package2])
+        self.assertEqual(self.panel.dim_x, self.dim_x)
+        self.assertEqual(self.panel.dim_y, self.dim_y)
+        self.assertEqual(self.panel.wind_load, self.wind_load )
+
+    def test_load_sharing(self):
+        self.assertEqual(sum(self.panel.LSF.values()),1)
+        self.assertAlmostEqual(self.panel.LSF[self.package1], 0.888888889)
+        self.assertAlmostEqual(self.panel.LSF[self.package2], 0.111111111)
+        
+    def test_stress_demand(self):
+        self.assertAlmostEqual(self.panel.stress[self.ply1], Q_(25.1955903,"MPa"),4)
+        self.assertAlmostEqual(self.panel.stress[self.ply2], Q_(25.1955903,"MPa"),4)
+        self.assertAlmostEqual(self.panel.stress[self.ply3], Q_(12.5977951,"MPa"),4)
+
+    def test_deflection_demand(self):
+        self.assertAlmostEqual(self.panel.deflection[self.package1], Q_(-22.9938324,"mm"),4)
+        self.assertAlmostEqual(self.panel.deflection[self.package2], Q_(-22.9938324,"mm"),4)
 
 if __name__ == '__main__':
     unittest.main()
