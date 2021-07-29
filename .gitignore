@@ -2,3 +2,6 @@ reference/*
 *.pyc
 .vscode/*
 todo.txt
+
+# dev virtual environment
+env/*
