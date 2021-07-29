@@ -1,7 +1,6 @@
 import abc
 import itertools
 
-from numpy.lib.function_base import place
 from . import ureg, Q_
 from .layers import GlassPly, InterLayer
 
