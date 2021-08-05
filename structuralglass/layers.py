@@ -5,7 +5,9 @@ import numpy as np
 
 # Lookup for nominal thickness to minimal allowable thickness in metric
 t_min_lookup_metric = {
+            2.0: 1.80,
             2.5: 2.16,
+            2.7: 2.59,
             3  : 2.92,
             4  : 3.78,
             5  : 4.57,
@@ -15,7 +17,8 @@ t_min_lookup_metric = {
             12: 11.91,
             16: 15.09,
             19: 18.26,
-            22: 21.44
+            22: 21.44,
+            25: 24.61
 }
 
 # Lookup for nominal thickness to minimal allowable thickness in imperial
@@ -30,7 +33,8 @@ t_min_lookup_imperial = {
             0.5    : 11.91,
             0.625  : 15.09,
             0.75   : 18.26,
-            0.875  : 21.44
+            0.875  : 21.44,
+            1      : 24.61
 }
 
 class GlassPly:
