@@ -1,7 +1,18 @@
-reference/*
 *.pyc
 .vscode/*
-todo.txt
 
-# dev virtual environment
+# Place for keeping dev specific todo's
+todo*
+
+# Place for dev specific testing
+testing.py
+
+# Place for dev specific virtual-environments
 env/*
+
+# Place for dev specific references
+reference/*
+
+# Distribution / packaging
+dist/
+*.egg-info/
