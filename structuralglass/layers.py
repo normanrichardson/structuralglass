@@ -471,6 +471,16 @@ def register_interlayer_product(product_name, data):
         raise ValueError("The provided data is not rectangular.")
     _interLayer_registry[product_name] = data 
 
+def deregister_interlayer_product(product_name):
+    """Deregister an existing interlayer product table.
+
+    Parameters
+    ----------
+    product_name : string
+        String identifier
+    """
+    _interLayer_registry.pop(product_name, None)
+
 __name_II = "Ionoplast Interlayer NCSEA"
 __data_II = {
     (Q_(10,"degC"), Q_(1,'sec')) : Q_(240, "MPa"),
