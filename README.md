@@ -48,7 +48,7 @@ The only demand method is for the application of face loading on four-side suppo
 
 > source env/bin/activate
 3. Install in editable mode
-> pip install -e
+> pip install -e .
 
 4. Testing
 > python -m unittest test.unittests
