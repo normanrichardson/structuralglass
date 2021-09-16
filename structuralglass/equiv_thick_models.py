@@ -235,9 +235,9 @@ class NonCompositeMethod(GlassLiteEquiv):
 
     def _calc_equiv_thickness(self):
         """Method that calculates the effective thicknesses. 
-        The laminates effective thickness is:
-            * for deflection: the square root of the minimum thicknesses squared
-            * for stress: the cubed root of the minimum thicknesses cubed
+        The laminates effective thickness is for:
+            * deflection: the square root of the sum of the minimum thicknesses squared
+            * stress: cubed root of the sum of the minimum thicknesses cubed
         """
         func = lambda n: sum(ii.t_min**n for ii in self.ply)**(1/n)
         self._h_efs = dict(zip(self.ply, itertools.repeat(func(2),len(self.ply))))
