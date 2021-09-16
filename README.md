@@ -3,6 +3,9 @@ This project is a python package for the structural analysis of glass.
 At present, it focuses on methods presented in the Engineering Structural Glass Design Guide by NCSEA
 (National Council of Structural Engineers Associations) and ASTM E1300.
 
+# Installation
+> pip install structuralglass
+
 # Functionality
 ## Layers:
 Create glass layers for nominal and actual thicknesses. Predefined values for nominal thickness - as defined in ASTM E1300 - are provided. Nominal thickness can be extended to accommodate custom definitions.
@@ -23,9 +26,10 @@ This assumption applies to both stress and deflection effective thickness.
 This model's validity decreases with load duration.
 
 ### Non-composite method:
-A simple mechanical behavior that assumes the laminates effective thickness is:
-* for deflection: the square root of the minimum thicknesses squared
-* for stress: the cubed root of the minimum thicknesses cubed
+A simple mechanical behavior that assumes the laminates effective thickness is for:
+* deflection: the square root of the sum of the minimum thicknesses squared
+* stress: cubed root of the sum of the minimum thicknesses cubed
+
 This model assumes a non-composite behavior.
 
 ### Shear transfer coefficient method:
@@ -38,6 +42,13 @@ Ref literature for limitations.
 The only demand method is for the application of face loading on four-side supported glass. This condition is applicable for the design of four-side supported glass under wind load.
 
 # Development/Contributions
+1. Fork and clone to a local working directory
+2. Setup a virtual environment
+> python -m venv env
 
-## Testing
-python -m unittest test.unittests
+> source env/bin/activate
+3. Install in editable mode
+> pip install -e
+
+4. Testing
+> python -m unittest test.unittests
