@@ -1,6 +1,9 @@
 *.pyc
 .vscode/*
 
+# Built documentation
+docs/_build
+
 # Place for keeping dev specific todo's
 todo*
 
