@@ -18,7 +18,7 @@ t3nom = 6 * ureg.mm
 windLoad = 1.436 * ureg.kPa
 
 # Allowable stress
-ft = gt.FullyTempered()
+ft = gt.GlassType.from_abbr("FT")
 # NCSEA uses a coef of variation of 0.2 so overriding the material specific value
 ft.coef_variation = 0.2
 # The allowable stress is greater than shown in NCSEA as it looks like NCSEA 
