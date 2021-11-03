@@ -18,23 +18,23 @@ To facilitate this common practice a :class:`~structuralglass.layers.GlassPly` c
     from structuralglass import Q_
     import structuralglass.layers as lay
     
-    t1nom = Q_(6, "mm")
-    ply1 = lay.GlassPly.from_nominal_thickness(t1nom)
+    t_nom = Q_(6, "mm")
+    ply = lay.GlassPly.from_nominal_thickness(t_nom)
     
-    ply1.t_min  # Q_(5.56, "mm")
+    ply.t_min  # Q_(5.56, "mm")
 
 
 :class:`~structuralglass.layers.GlassPly` created in this way will have properties for `t_nom` that are not None.
 
 In order to not limit the user to nominal thicknesses, a :class:`~structuralglass.layers.GlassPly` can be created using :meth:`~structuralglass.layers.GlassPly.from_actual_thickness`::
 
-    from structuralglass import ureg
+    from structuralglass import Q_
     import structuralglass.layers as lay
 
-    t1act = 5.56 * ureg.mm
-    ply1 = lay.GlassPly.from_actual_thickness(t1act)
+    t_act = Q_(5.56, "mm")
+    ply = lay.GlassPly.from_actual_thickness(t_act)
 
-    ply1.t_min  # Q_(5.56, "mm")
+    ply.t_min  # Q_(5.56, "mm")
 
 Interlayers
 -----------
@@ -49,12 +49,12 @@ A static :class:`~structuralglass.layers.Interlayer` can be created via the :met
 
 ::
 
-    from structuralglass import ureg
+    from structuralglass import Q_
     import structuralglass.layers as lay
 
     # Interlayer PVB at 30degC for 1 day load duration
-    G_pvb = 0.281*ureg.MPa
-    t_pvb = 0.89*ureg.mm
+    G_pvb = Q_(0.281, "MPa")
+    t_pvb = Q_(0.89, "mm")
     interlayer = lay.Interlayer.from_static(t_pvb, G_pvb)
 
 It is common for interlayer manufacturers to provide material properties in tabulated forms.
@@ -73,7 +73,7 @@ A dynamic :class:`~structuralglass.layers.Interlayer` can be created via the :me
     from structuralglass import Q_
     import structuralglass.layers as lay
 
-    t_pvb = 1.52*ureg.mm
+    t_pvb = Q_(1.52, "mm")
     product_name = "Ionoplast Interlayer NCSEA"
     interlayer = lay.Interlayer.from_product_table(t_pvb, product_name)
     
@@ -85,8 +85,8 @@ A dynamic :class:`~structuralglass.layers.Interlayer` can be created via the :me
     interlayer.G    #Q_(3.29, "MPa")
 
 A background registry holds the manufactures tabular data.
-New data can be added via the :func:`~structuralglass.layers.register_interlayer_product` functions.
-Data can be removed via the :func:`~structuralglass.layers.deregister_interlayer_product` functions.
+New data can be added via the :func:`~structuralglass.layers.register_interlayer_product` function.
+Data can be removed via the :func:`~structuralglass.layers.deregister_interlayer_product` function.
 
 ::
 
