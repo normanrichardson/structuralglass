@@ -1,9 +1,127 @@
+"""
+There are two layered materials commonly used in structural glass design:
+    
+    - Glass plys
+    - Interlayers
+
+Typically, interlayer materials are used to bond glass layers into a laminate.
+Common commercial applications use either ionoplast (SGP) or polyvinyl butyral (PVD) as the bonding layers between glass layers.
+
+
+Glass Plys
+----------
+
+It is common for glass layers to be manufactured according to "nominal thickness". 
+Each nominal thickness has an associated min required thickness (as documented in E1300).
+To facilitate this common practice a :class:`~structuralglass.layers.GlassPly` can be created using :meth:`~structuralglass.layers.GlassPly.from_nominal_thickness`::
+
+    from structuralglass import Q_
+    import structuralglass.layers as lay
+    
+    t1nom = Q_(6, "mm")
+    ply1 = lay.GlassPly.from_nominal_thickness(t1nom)
+    
+    ply1.t_min  # Q_(5.56, "mm")
+
+
+:class:`~structuralglass.layers.GlassPly` created in this way will have properties for `t_nom` that are not None.
+
+In order to not limit the user to nominal thicknesses, a :class:`~structuralglass.layers.GlassPly` can be created using :meth:`~structuralglass.layers.GlassPly.from_actual_thickness`::
+
+    from structuralglass import ureg
+    import structuralglass.layers as lay
+
+    t1act = 5.56 * ureg.mm
+    ply1 = lay.GlassPly.from_actual_thickness(t1act)
+
+    ply1.t_min  # Q_(5.56, "mm")
+
+Interlayers
+-----------
+An :class:`~structuralglass.layers.InterLayer` can be defined in 2 ways:
+
+- as a static interlayer
+- as a dynamic interlayer
+
+Static :class:`~structuralglass.layers.InterLayer` are not backed by manufactures data.
+They are static in the sense that the shear modulus is changed manually.
+A static :class:`~structuralglass.layers.InterLayer` can be created via the :meth:`~structuralglass.layers.InterLayer.from_static` class method.
+
+::
+
+    from structuralglass import ureg
+    import structuralglass.layers as lay
+
+    # Interlayer PVB at 30degC for 1 day load duration
+    G_pvb = 0.281*ureg.MPa
+    t_pvb = 0.89*ureg.mm
+    interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
+
+It is common for interlayer manufacturers to provide material properties in tabulated forms.
+This is because the laminates are viscoelastic materials and their material properties depend on load duration and temperature.
+So, the manufacture provides tabulated "effective" data for a load duration and temperature.
+
+Dynamic :class:`~structuralglass.layers.InterLayer` are backed by manufactures tabular data.
+They are dynamic in the sense that the shear modulus can be changed by providing a new temperature and load duration.
+For gaps in the manufactures data (for example, the shear modulus is given for 10degC and 20degC and 15degC is set), the tabular data is interpolated linearly.
+Extrapolation is not done and capped to tabulated values.
+This functionality is provided by scipy's interp2d function.
+A dynamic :class:`~structuralglass.layers.InterLayer` can be created via the :meth:`~structuralglass.layers.InterLayer.from_product_table` class method.
+
+::
+
+    from structuralglass import Q_
+    import structuralglass.layers as lay
+
+    t_pvb = 1.52*ureg.mm
+    product_name = "Ionoplast Interlayer NCSEA"
+    interlayer = lay.InterLayer.from_product_table(t_pvb, product_name)
+    
+    #set the load duration and temperature
+    interlayer.duration = Q_(1,"month")
+    interlayer.temperature = Q_(40,"degC")
+
+    # Access the shear modulus of the "Ionoplast Interlayer NCSEA"
+    interlayer.G    #Q_(3.29, "MPa")
+
+A background registry holds the manufactures tabular data.
+New data can be added via the :func:`~structuralglass.layers.register_interlayer_product` functions.
+Data can be removed via the :func:`~structuralglass.layers.deregister_interlayer_product` functions.
+
+::
+
+    from structuralglass import Q_
+    import structuralglass.layers as lay
+
+    name = "product_ID_1"
+    data = {
+        (Q_(20,"degC"), Q_(3,'sec')) : Q_(240, "MPa"),
+        (Q_(30,"degC"), Q_(3,'sec')) : Q_(217, "MPa"),
+        (Q_(40,"degC"), Q_(3,'sec')) : Q_(151, "MPa"),
+
+        (Q_(20,"degC"), Q_(10,'min')) : Q_(77.0, "MPa"),
+        (Q_(30,"degC"), Q_(10,'min')) : Q_(36.2, "MPa"),
+        (Q_(40,"degC"), Q_(10,'min')) : Q_(11.8, "MPa"),
+    }
+    lay.register_interlayer_product(name, data)
+
+    # choose an interlayer thickness
+    t_pvb = Q_(1.52, "mm")
+    interlayer = lay.InterLayer.from_product_table(t_pvb, name)
+
+    # set the load duration and temperature
+    interlayer.duration = Q_(5,"min")
+    interlayer.temperature = Q_(35,"degC")
+
+    interlayer.G    #Q(104.15, "MPa")
+
+"""
+
 from . import ureg, Q_
 from scipy import interpolate
 import pint
 import numpy as np
 
-# Lookup for nominal thickness to minimal allowable thickness in metric
 t_min_lookup_metric = {
             2.0: 1.80,
             2.5: 2.16,
@@ -20,8 +138,9 @@ t_min_lookup_metric = {
             22: 21.44,
             25: 24.61
 }
+"""Lookup for the minimal allowable thickness. Key and value units are in mm.
+"""
 
-# Lookup for nominal thickness to minimal allowable thickness in imperial
 t_min_lookup_imperial = {
             0.09375: 2.16,
             0.125  : 2.92,
@@ -36,59 +155,38 @@ t_min_lookup_imperial = {
             0.875  : 21.44,
             1      : 24.61
 }
+"""Lookup for the minimal allowable thickness. Key and value units are in inches and mm respectively.
+"""
 
 class GlassPly:
     """A class to represent a glass ply, its thinkess (nominal and minimum allowable) and mechanical properties.
+    """
 
-    Attributes
-    ----------
-    E : Quantity [pressure]
-        Elastic modulus.
-    t_nom : Quantity [length]
-        Nominal thickness.
-    t_min : Quantity [length]
-        Min allowable thickness.
-    
-    Methods
-    -------
-    from_nominal_thickness(t_nom):
-        Class method to creating a GlassPly with a nominal thickness.
-    from_actual_thickness(t_nom):
-        Class method to creating a GlassPly with an actual thickness.
-    
-    Raises
-    ------
-    pint.DimensionalityError
-        If an input argument does not meet the Quantity requirement.
-    TypeError
-        The provided nominal thickness is not a Quanity['length'] or None.
-    ValueError
-        Actual thickness/elastic modulus/nominal thickness cannot be less than zero.
-    ValueError
-        The provided nominal thickness could not be found in the lookup.
-    """    
     @ureg.check(None, '[length]', None, '[pressure]')
     def __init__(self, t_min, t_nom = None, E = 71.7 * ureg.GPa):
-        """[summary]
+        """Constructor
 
         Parameters
         ----------
-        t_min : Quantity [length]
+        t_min : ``Quantity [length]``
             Min allowable thickness.
-        t_nom : Quantity [length], optional
+        t_nom : ``Quantity [length], optional``
             Nominal thickness, by default None (if using actual thickness)
-        E : Quantity [pressure], optional
+        E : ``Quantity [pressure], optional``
             Elastic modulus, by default 71.7GPa
 
         Raises
         ------
         pint.DimensionalityError
-            If an input argument does not meet the Quantity requirement.
+            If an input argument does not meet the ``Quantity`` requirement.
         TypeError
-            The provided nominal thickness is not a Quanity['length'] or None.
+            The provided nominal thickness is not a ``Quanity['length']`` or None.
         ValueError
             Actual thickness/elastic modulus/nominal thickness cannot be less than zero.
+        ValueError
+            The provided nominal thickness could not be found in the lookup.
         """
+
         # The check decorator can not be used to check t_nom (as it can be None)
         if t_nom is not None:
             if (isinstance(t_nom,Q_)): 
@@ -112,13 +210,14 @@ class GlassPly:
 
         Parameters
         ----------
-        t_nom : Quantity [length]
+        t_nom : ``Quantity [length]``
             Nominal thickness.
 
         Returns
         -------
         GlassPly
         """
+
         t_min = cls._find_min_from_nom(t_nom)
         return cls(t_min,t_nom)
     
@@ -129,13 +228,14 @@ class GlassPly:
 
         Parameters
         ----------
-        t_act : Quantity [length]
+        t_act : ``Quantity [length]``
             Actual thickness.
 
         Returns
         -------
         GlassPly
         """
+
         return cls(t_act)
 
     @staticmethod
@@ -151,128 +251,76 @@ class GlassPly:
 
     @property
     def E(self):
-        """Get the elastic modulus.
+        """The elastic modulus as ``Quantity [pressure]``
 
-        Returns
-        -------
-        Quantity [pressure]
+        Raises
+        ------
+        ValueError
+            When set to a value less than 0MPa.
         """
+
         return self._E
     
     @E.setter
     @ureg.check(None, '[pressure]')
     def E(self, value):
-        """Set the elastic modulus.
-
-        Parameters
-        ----------
-        value : Quantity [pressure]
-            Elastic modulus
-
-        Raises
-        ------
-        ValueError
-            Elastic modulus cannot be less than 0MPa.
-        """
         if value < Q_(0,'MPa'): raise ValueError("Elastic modulus cannot be less than zero.")
         self._E = value
     
     @property
     def t_nom(self):
-        """Get the nominal thickness.
+        """The nominal thickness as ``Quantity [length]``
 
-        Returns
-        -------
-        Quantity [length]
+        Raises
+        ------
+        ValueError
+            When set to a value less than 0mm.
         """
+
         return self._t_nom
     
     @t_nom.setter
     @ureg.check(None, '[length]')
     def t_nom(self, value):
-        """Set the nominal thickness.
-
-        Parameters
-        ----------
-        value : Quantity [length]
-            Nominal thickness
-
-        Raises
-        ------
-        ValueError
-            Nominal thickness cannot be less than zero.
-        """
         if value < Q_(0,'inch'): raise ValueError("Nominal thickness cannot be less than zero.")
         self._t_nom = value
         self._t_min = self._find_min_from_nom(value)
 
     @property
     def t_min(self):
-        """Get the minimum thickness.
+        """The minimum thickness as ``Quantity [length]``
 
-        Returns
-        -------
-        Quantity [length]
+        Raises
+        ------
+        ValueError
+            When set to a value less than 0mm.
         """
+
         return self._t_min
     
     @t_min.setter
     @ureg.check(None, '[length]')
     def t_min(self, value):
-        """Set the minimum thickness.
-
-        Parameters
-        ----------
-        value : Quantity [length]
-            Minimum thickness
-
-        Raises
-        ------
-        ValueError
-            Actual thickness cannot be less than zero.
-        """
         if value < Q_(0,'inch'): raise ValueError("Actual thickness cannot be less than zero.")
         self._t_min = value
         self._t_nom = None
 
-
-
-
 class InterLayer:
     """
     A class to represent a glass interlayer(e.g. PVB or SG), and its mechanical properties. 
-    Rate dependent properties can be considered via the use of a product table or registered product name
-
-    ...
-
-    Attributes
-    ----------
-    t : Quantity [length]
-        thickness
-    G : Quantity [pressure]
-        Shear modulus
-    temperature: Quantity [temperature]
-        The load case temperature, if a product table is used.
-    duration:
-        The load case duration, if a product table is used.
-
-    Methods
-    -------
-    from_product_table(t, product_name):
-        Class method to creating a interlayer with a registered product name
-    from_static(t, G):
-        Class method to creating a interlayer with a static shear modulus value
+    Rate dependent properties can be considered via the use of a product table or registered product name.
     """
+
     def __init__(self, t, **kwargs):
-        """[summary]
+        """Constructor
 
         Parameters
         ----------
-        t : [type]
-            [description]
-        G : Quantity [pressure]
+        t : ``Quantity [length]``
+            Interlayer thickness.
+        G : ``Quantity [pressure]``
             Shear modulus for the case of a static layer, do not provide a G_table.
-        G_table: Dict[(Quantity [temperature],Quantity [time]), Quantity [pressure]]
+        G_table: ``Dict[(Quantity [temperature],Quantity [time]), Quantity [pressure]]``
             Shear modulus table for the case of using an interlayer product table.
             The dictionary keys are (temperature, duration) and associated shear modulus.
             Do not provide a G value.
@@ -283,7 +331,8 @@ class InterLayer:
             If neither G nor G_table are provided.
         ValueError
             If both G and G_table are provided.
-        """        
+        """
+
         self.t = t
         G_tmp = kwargs.get('G',None)
         G_table_tmp = kwargs.get('G_table',None)
@@ -319,15 +368,16 @@ class InterLayer:
 
         Parameters
         ----------
-        t : Quantity [length]
+        t : ``Quantity [length]``
             The thickness of the interlayer.
-        product_name : sting
+        product_name : ``string``
             The registred name of the product.
 
         Returns
         -------
         Interlayer
         """
+
         if not(t > Q_(0, "mm")): raise ValueError("The thickness must be greater than zero [lengh].")
         table = _interLayer_registry.get(product_name, None)
         if table is None:
@@ -341,101 +391,68 @@ class InterLayer:
 
         Parameters
         ----------
-        t : Quantity [length]
+        t : ``Quantity [length]``
             The thickness of the interlayer.
-        G : Quantity [pressure]
+        G : ``Quantity [pressure]``
             The shear modulus.
 
         Returns
         -------
         Interlayer
         """
+
         if not(t > Q_(0, "mm")): raise ValueError("The thickness must be greater than zero [lengh].")
         if not(G > Q_(0, "MPa")): raise ValueError("The shear modulus must be greater than zero [pressure].")
         return cls(t,G=G)
 
     @property
     def temperature(self):
-        """Get the temperature
-
-        Returns
-        -------
-        Quantity [temperature]
+        """The temperature as ``Quantity [temperature]``.
 
         Raises
         ------
         ValueError
             If no product table is provided.
         """
+
         if self.G_table is None: raise ValueError("No product table provided. Static case being used.")
         return self._temperature
 
     @temperature.setter
     @ureg.check(None,'[temperature]')
     def temperature(self,value):
-        """Set the temperature
-
-        Parameters
-        ----------
-        value : Quantity [temperature]
-            New temperature value
-
-        Raises
-        ------
-        ValueError
-            If no product table is provided.
-        """
         if self.G_table is None: raise ValueError("No product table provided. Static case being used.")
         self._temperature = value
 
     @property
     def duration(self):
-        """Get the duration
-
-        Returns
-        -------
-        Quantity [time]
+        """The duration as ``Quantity [time]``.
 
         Raises
         ------
         ValueError
             If no product table is provided.
         """
+
         if self.G_table is None: raise ValueError("No product table provided. Static case being used.")
         return self._duration
 
     @duration.setter
     @ureg.check(None,'[time]') 
     def duration(self,value):
-        """Set the duration
-
-        Parameters
-        ----------
-        value : Quantity [time]
-            New duration value
-
-        Raises
-        ------
-        ValueError
-            If no product table is provided.
-        """
         if self.G_table is None: raise ValueError("No product table provided. Static case being used.")
         self._duration = value
         
     @property
     def G(self):
-        """Get the shear modulus. Interpolates linearly within the domain of the provided table.
-
-        Returns
-        -------
-        Quantity [pressure]
-            The shear modulus
+        """The shear modulus as ``Quantity [pressure]``. Interpolates linearly within the domain of the provided table.
 
         Raises
         ------
         ValueError
             If a product table is being used and the reference temperature and/or duration are not set.
-        """        
+        """
+
         if self._G is not None:
             return self._G
         else:
@@ -446,14 +463,15 @@ class InterLayer:
                 return self.G_interp_dim(self.temperature, self.duration)[0]
 
 _interLayer_registry = {}
+
 def register_interlayer_product(product_name, data):
     """Register new interlayer product table.
 
     Parameters
     ----------
-    product_name : str
+    product_name : ``string``
         String identifier
-    data : Dict( Tuple(Quanity['temperature'], Quanity['time']), Quanity['pressure'])
+    data : ``Dict( Tuple(Quanity['temperature'], Quanity['time']), Quanity['pressure'])``
         The tabulated data of the shear modulus that depends on temperature and load duration.
 
     Raises
@@ -463,6 +481,7 @@ def register_interlayer_product(product_name, data):
         (20degC, 3s) and (30degC, 10min), then values for (30degC, 3s) and (20degC, 10min) must also 
         be provided.
     """
+
     G_table_tmp = set([ii[0].to("degC").magnitude for ii in data.keys()])
     G_table_dur = set([ii[1].to("sec").magnitude for ii in data.keys()])
     G_table_val = list(data.values())
@@ -476,9 +495,10 @@ def deregister_interlayer_product(product_name):
 
     Parameters
     ----------
-    product_name : string
+    product_name : ``string``
         String identifier
     """
+
     _interLayer_registry.pop(product_name, None)
 
 __name_II = "Ionoplast Interlayer NCSEA"

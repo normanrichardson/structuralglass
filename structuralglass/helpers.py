@@ -3,38 +3,12 @@ from . import ureg, Q_
 
 class Roarks4side:
     """Roarks four sided simply supported plate calculations.
-    
-    Parameters
-    ----------
-    dim_x: Quantity['length']
-        The x dimension of the plate.
-    dim_y: Quantity['length']
-        The y dimension of the plate.
-    E: Quantity['pressure']
-        The elastic modulus of the plate.
-    t: Quantity['length'], optional
-        The plate thickness. The default is 1 inch.
-    
-    Attributes
-    ----------
-    dim_x
-    dim_y
-    E
-    t
-
-    Methods
-    -------
-    stress_max(q):
-        Calculates the plates max stress.
-    deflection_max(q):
-        Calculates the plates max deflection.
-    reaction_max(q):
-        Calculates the plates max reaction.
     """
 
     @ureg.check(None, '[pressure]', '[length]','[length]', '[length]')
     def __init__(self, E, dim_x, dim_y, t=Q_(1,"inch")):
         """Constructor
+
         Parameters
         ----------
         dim_x: Quantity['length']
@@ -46,6 +20,7 @@ class Roarks4side:
         t: Quantity['length'], optional
             The plate thickness. The default is 1 inch.
         """
+
         self._ratio = None
         self.dim_x = dim_x
         self.dim_y = dim_y
@@ -76,6 +51,7 @@ class Roarks4side:
         Quantity['pressure']
             The plates max stress.
         """
+
         value = self._beta(self._ratio)*q*(self._b/self.t)**2
         return value.to_reduced_units()
 
@@ -93,6 +69,7 @@ class Roarks4side:
         Quantity['length']
             The plates max deflection.
         """
+
         value = -self._alpha(self._ratio)*q*self._b**4/(self.E*self.t**3)
         return value.to_reduced_units()
 
@@ -110,6 +87,7 @@ class Roarks4side:
         Quantity['force_per_unit_length']
             The plates max reaction force.
         """
+
         value = self._gamma(self._ratio)*q*self._b
         return value.to_reduced_units()
 
@@ -119,28 +97,19 @@ class Roarks4side:
 
     @property
     def dim_x(self):
-        """Get the x dimension of the plate.
-
-        Returns
-        -------
-        Quantity['length']
-        """
-        return self._dim_x
-    
-    @dim_x.setter
-    @ureg.check(None, "[length]")
-    def dim_x(self, value):
-        """Set the x dimension of the plate.
-
-        Parameters
-        ----------
-        value : Quantity['length']
+        """Get the x dimension of the plate in Quantity['length']
 
         Raises
         ------
         ValueError
             If the dimension is less than 0 inch/mm
         """
+
+        return self._dim_x
+    
+    @dim_x.setter
+    @ureg.check(None, "[length]")
+    def dim_x(self, value):
         if value < Q_(0,'mm'): raise ValueError("Dimensions must be greater than zero.")
         self._dim_x = value
         if self._ratio is not None:
@@ -148,28 +117,19 @@ class Roarks4side:
     
     @property
     def dim_y(self):
-        """Get the y dimension of the plate.
-
-        Returns
-        -------
-        Quantity['length']
-        """
-        return self._dim_y
-    
-    @dim_y.setter
-    @ureg.check(None, "[length]")
-    def dim_y(self,value):
-        """Set the y dimension of the plate.
-
-        Parameters
-        ----------
-        value : Quantity['length']
+        """The y dimension of the plate in Quantity['length']
 
         Raises
         ------
         ValueError
             If the dimension is less than 0 inch/mm
         """
+
+        return self._dim_y
+    
+    @dim_y.setter
+    @ureg.check(None, "[length]")
+    def dim_y(self,value):
         if value < Q_(0,'mm'): raise ValueError("Dimensions must be greater than zero.")
         self._dim_y = value
         if self._ratio is not None:
@@ -177,54 +137,36 @@ class Roarks4side:
     
     @property
     def t(self):
-        """Get the thickness of the plate.
+        """The thickness of the plate in Quantity['length'].
 
-        Returns
-        -------
-        Quantity['length']
+        Raises
+        ------
+        ValueError
+            If the thickness is less than 0 inch/mm.
         """
+
         return self._t
 
     @t.setter
     @ureg.check(None, '[length]')
     def t(self, value):
-        """Set the thickness of the plate.
-
-        Parameters
-        ----------
-        value : Quantity['length']
-
-        Raises
-        ------
-        ValueError
-            If the thickness is less than 0 inch/mm
-        """
         if value < Q_(0,'mm'): raise ValueError("Thickness must be greater than zero.")
         self._t = value
 
     @property
     def E(self):
-        """Get the elastic modulus of the plate.
-
-        Returns
-        -------
-        Quantity['pressure']
-        """
-        return self._E
-
-    @E.setter
-    @ureg.check(None, '[pressure]')
-    def E(self, value):
-        """Set the elastic modulus of the plate.
-
-        Parameters
-        ----------
-        value : Quantity['pressure']
+        """The elastic modulus of the plate in Quantity['pressure']
 
         Raises
         ------
         ValueError
             If the elastic modulus is less than 0 ksi/MPa
         """
+
+        return self._E
+
+    @E.setter
+    @ureg.check(None, '[pressure]')
+    def E(self, value):
         if value < Q_(0,'MPa'): raise ValueError("Elastic modulus must be greater than zero.")
         self._E = value

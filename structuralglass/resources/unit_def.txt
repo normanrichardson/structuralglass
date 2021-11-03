@@ -1,7 +1,3 @@
-
-
-
-
 # Pressure additional
 pound_force_per_square_foot = pound * gravity / foot ** 2 = psf
 
