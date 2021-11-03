@@ -76,6 +76,17 @@ class TestInterlayerStatic(unittest.TestCase):
         self.assertEqual(str(cm.exception), "No product table provided. Static case being used.")
 
 class TestInterlayerProductRegistration(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        # save the registry before testing
+        cls._registry = lay._interLayer_registry
+    
+    @classmethod
+    def tearDownClass(cls):
+        # reset the registry after testing
+        lay._interLayer_registry = cls._registry
+
     def test_valid_product_data(self):
         name = "nice product"
         data = {
@@ -89,6 +100,7 @@ class TestInterlayerProductRegistration(unittest.TestCase):
         }
         lay.register_interlayer_product(name, data)
         self.assertDictEqual(lay._interLayer_registry[name], data)
+
     def test_invalid_product_data(self):
         name = "not so nice product"
         invalid_data = {
@@ -104,6 +116,7 @@ class TestInterlayerProductRegistration(unittest.TestCase):
         self.assertEqual(str(cm.exception), "The provided data is not rectangular.")
         
 class TestInterlayerProductTable(unittest.TestCase):
+    
     def setUp(self):
         self.t_pvb = 1.52*ureg.mm
         product_name = "Ionoplast Interlayer NCSEA"
@@ -236,12 +249,15 @@ class TestShearTransferCoefMethod(unittest.TestCase):
         self.assertEqual(str(cm.exception), "Ply validation failed: Method is only valid a list of [GlassPly, Interlayer, GlassPly].")
 
 class TestGlassTypeRegistration(unittest.TestCase):
+    
     @classmethod
     def setUpClass(cls):
+        # save the registry before testing
         cls._registry = gt._glass_type_registry
 
     @classmethod
     def tearDownClass(cls):
+        # reset the registry after testing
         gt._glass_type_registry = cls._registry
 
     def test_valid_glass_type_add(self):
