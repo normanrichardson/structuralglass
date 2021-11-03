@@ -10,15 +10,13 @@ GlassType Class
     :members:
     :special-members: __init__
 
-Derived Class
--------------
+Glass Type Registry Functions
+-----------------------------
 
-.. autoclass:: structuralglass.glass_types.Annealed
-    :members:
+.. autofunction:: structuralglass.glass_types.register_glass_type
 
-.. autoclass:: structuralglass.glass_types.HeatStrengthened
-    :members:
+.. autofunction:: structuralglass.glass_types.deregister_glass_type
 
-.. autoclass:: structuralglass.glass_types.FullyTempered
-    :members:
+.. autofunction:: structuralglass.glass_types.get_glass_types_data
 
+.. autofunction:: structuralglass.glass_types.get_abbr_data

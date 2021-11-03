@@ -61,7 +61,7 @@ Example use
    wind_load = Q_(30,"psf")
 
    # Allowable stress
-   ft = gt.FullyTempered()
+   ft = gt.GlassType.from_abbr("FT")
    allow_stress = ft.prob_breakage_factor(1/1000) \
       * ft.load_duration_factor(Q_(3,"sec")) \
       * ft.surf_treat_factor("None") \

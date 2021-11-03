@@ -76,7 +76,6 @@ class TestInterlayerStatic(unittest.TestCase):
         self.assertEqual(str(cm.exception), "No product table provided. Static case being used.")
 
 class TestInterlayerProductRegistration(unittest.TestCase):
-
     def test_valid_product_data(self):
         name = "nice product"
         data = {
@@ -236,9 +235,93 @@ class TestShearTransferCoefMethod(unittest.TestCase):
             [et.ShearTransferCoefMethod(pac_invalid_3,self.a)]
         self.assertEqual(str(cm.exception), "Ply validation failed: Method is only valid a list of [GlassPly, Interlayer, GlassPly].")
 
+class TestGlassTypeRegistration(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls._registry = gt._glass_type_registry
+
+    @classmethod
+    def tearDownClass(cls):
+        gt._glass_type_registry = cls._registry
+
+    def test_valid_glass_type_add(self):
+        data = {
+            "stress_surface" : 93.1 * ureg.MPa,
+            "stress_edge"    : 73.0 * ureg.MPa,
+            "duration_factor" : 47.5,
+            "coef_variation" : 0.2,
+            "surf_factors" : {
+                "None" : 1,
+                "Fritted" : 1,
+                "Acid etching" : 0.5,
+                "Sandblasting" : 0.5
+            }
+        }
+        gt.register_glass_type(
+            name="Fully Tempered 2", 
+            **data,
+            abbr="FT2"
+        )
+        self.assertDictEqual(gt._glass_type_registry["Fully Tempered 2"], data)
+
+    def test_invalid_glass_type_add_1(self):
+        data = {
+            "stress_surface" : 93.1 * ureg.MPa,
+            "stress_edge"    : 73.0 * ureg.MPa,
+            "duration_factor" : 47.5,
+            "coef_variation" : 0.2,
+            "surf_factors" : {
+                "None" : 1,
+                "Fritted" : 1,
+                "Acid etching" : 0.5,
+                "Sandblasting" : 0.5
+            }
+        }
+
+        with self.assertRaises(ValueError) as cm:
+            gt.register_glass_type(
+                name="Fully Tempered", 
+                **data,
+                abbr="FT"
+            )
+        self.assertEqual(str(cm.exception), "Name identifier already in use. Deregister `Fully Tempered` first.")
+
+    def test_invalid_glass_type_add_2(self):
+        data = {
+            "stress_surface" : 93.1 * ureg.MPa,
+            "stress_edge"    : 73.0 * ureg.MPa,
+            "duration_factor" : 47.5,
+            "coef_variation" : 0.2,
+            "surf_factors" : {
+                "None" : 1,
+                "Fritted" : 1,
+                "Acid etching" : 0.5,
+                "Sandblasting" : 0.5
+            }
+        }
+
+        with self.assertRaises(ValueError) as cm:
+            gt.register_glass_type(
+                name="Fully Tempered 2", 
+                **data,
+                abbr="FT"
+            )
+        self.assertEqual(str(cm.exception), "Abbreviation identifier already in use. Deregister `Fully Tempered` first.")
+
+    def test_remove_glass_type(self):
+        name = "Annealed"
+        abbr = "AN"
+        gt.deregister_glass_type(name)
+        with self.assertRaises(KeyError) as cm:
+            gt._glass_type_registry[name]
+        self.assertEqual(str(cm.exception), "'Annealed'")
+        with self.assertRaises(KeyError) as cm:
+            gt._glass_type_abbr[abbr]
+        self.assertEqual(str(cm.exception), "'AN'")
+
 class TestAnnealedGlassType(unittest.TestCase):
     def setUp(self) -> None:
-        self.an = gt.Annealed()
+        self.an = gt.GlassType.from_abbr("AN")
     def test_prob_breakage_factor(self):
         self.assertAlmostEqual(self.an.prob_breakage_factor(1/1000), 0.681114447,4)
         self.assertAlmostEqual(self.an.prob_breakage_factor(5/1000), 0.9218781646,4)
@@ -248,11 +331,11 @@ class TestAnnealedGlassType(unittest.TestCase):
         self.assertAlmostEqual(self.an.load_duration_factor(10*ureg.year), 0.315,3)
         self.assertAlmostEqual(self.an.load_duration_factor(12*ureg.hour), 0.550,3)
     def test_surf_factors(self):
-        self.assertAlmostEqual(self.an.surf_factors["None"], 1)
+                self.assertAlmostEqual(self.an.surf_factors["None"], 1)
 
 class TestHeatStrengthenedGlassType(unittest.TestCase):
     def setUp(self) -> None:
-        self.hs = gt.HeatStrengthened()
+        self.hs = gt.GlassType.from_abbr("HS")
     def test_prob_breakage_factor(self):
         self.assertAlmostEqual(self.hs.prob_breakage_factor(1/1000), 0.8399834341,4)
         self.assertAlmostEqual(self.hs.prob_breakage_factor(3/1000), 0.9204133016,4)
@@ -266,7 +349,7 @@ class TestHeatStrengthenedGlassType(unittest.TestCase):
 
 class TestFullyTemperedGlassType(unittest.TestCase):
     def setUp(self) -> None:
-        self.ft = gt.FullyTempered()
+        self.ft = gt.GlassType.from_abbr("FT")
     def test_prob_breakage_factor(self):
         self.assertAlmostEqual(self.ft.prob_breakage_factor(1/1000), 0.9102486076,4)
         self.assertAlmostEqual(self.ft.prob_breakage_factor(4/1000), 0.9679689847,4)

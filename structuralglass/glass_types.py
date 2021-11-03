@@ -1,8 +1,8 @@
 """
 The NCSEA Glass Design Guide presents a common mathematical model for the strength of fabricated glass.
-This common model is reflected in the abstract class :class:`~structuralglass.layers.GlassType`.
+This common model is reflected in the class :class:`~structuralglass.glass_types.GlassType`.
 
-Much like steel, float glass' strength properties can be manipulated using heat treatments and chemical processes.
+Much like steel, float glass's strength properties can be manipulated using heat treatments and chemical processes.
 Different processes have been quantified and codified.
 Glass fabricators can produce glass plys that are either:
 
@@ -10,68 +10,65 @@ Glass fabricators can produce glass plys that are either:
  - heat strengthened
  - fully tempered
 
-To facilitate these common designations :class:`~structuralglass.layers.Annealed`, :class:`~structuralglass.layers.HeatStrengthened`, and :class:`~structuralglass.layers.FullyTempered` can be used.
+To facilitate these common designations a :class:`~structuralglass.glass_types.GlassType` can be created using the :meth:`~structuralglass.glass_types.GlassType.from_name` and :meth:`~structuralglass.glass_types.GlassType.from_abbr` class methods:
 
 ::
 
     from structuralglass import Q_
     import structuralglass.glass_types as gt
         
-    # Allowable stress
-    ft = gt.FullyTempered()
-    allow_stress = ft.prob_breakage_factor(1/1000) \\
+    # Allowable stress FT
+    ft = gt.GlassType.from_name("Fully Tempered")
+    allow_stress_ft = ft.prob_breakage_factor(1/1000) \\
         * ft.load_duration_factor(Q_(3, "sec")) \\
         * ft.surf_treat_factor("None") * ft.stress_edge     #Q(66.448, "MPa")
+    
+    # Allowable stress AN
+    an = gt.GlassType.from_abbr("AN")
+    allow_stress_an = an.prob_breakage_factor(1/1000) \\
+        * ft.load_duration_factor(Q_(3, "sec")) \\
+        * ft.surf_treat_factor("None") * ft.stress_edge     #Q(12.464, "MPa")
 
-These classes are derived from :class:`~structuralglass.layers.GlassType`.
-Unique formulations of the mechanical behavior can be derived from :class:`~structuralglass.layers.GlassType`.
+A background registry holds the glass type parameters.
+New glass type parameters can be added via the :func:`~structuralglass.glass_types.register_glass_type` function.
 
 ::
 
     from structuralglass import Q_
-    import structuralglass.glass_types as gt
+    from structuralglass import glass_types as gt
 
-
-    class MyFT(gt.GlassType):
-    \"\"\"My tempered glass type.
-    \"\"\"
-
-    def __init__(self):
-        stress_surface =  Q_(93.1, "MPa")
-        stress_edge    = Q_(73.0, "MPa")
-        duration_factor = 47.5
-        coef_variation = 0.2
+    gt.register_glass_type(
+        name="My Fully Tempered", 
+        stress_surface = Q_(93.1, "MPa"),
+        stress_edge    = Q_(73.0, "MPa"),
+        duration_factor = 47.5,
+        coef_variation = 0.2,
         surf_factors = {
             "None" : 1,
             "Fritted" : 1,
             "Acid etching" : 0.5,
             "Sandblasting" : 0.5
-        }
-        super(MyFT, self).__init__(stress_surface, stress_edge, \\
-            duration_factor, surf_factors, coef_variation)
+        },
+        abbr="MyFT"
+    )
 
-    # Allowable stress
-    ft = MyFT()
-    allow_stress = ft.prob_breakage_factor(1/1000) \\
-        * ft.load_duration_factor(Q_(3, "sec")) \\
-        * ft.surf_treat_factor("None") * ft.stress_edge     #Q(53.805, "MPa")
-
+Glass types can be removed via the :func:`~structuralglass.glass_types.deregister_glass_type` function.
+The underlying data can be viewed via the :func:`~structuralglass.glass_types.get_glass_types_data` function.
+The abbreviation mapping can be viewed via the  :func:`~structuralglass.glass_types.get_abbr_data` function.
 """
 
 from . import ureg, Q_
-import abc
 import scipy.stats as ss
+import copy
 
 class GlassType:
     """
-    An abstract class to represent the allowable stress of glass.
-    Unique formulations of the mechanical behaviour are derived from this class.
+    A class that represents the stress factors in glass.
     """
 
-    __metaclass__ = abc.ABCMeta
     @ureg.check(None, '[pressure]', '[pressure]', None, None, None)
     def __init__(self, stress_surface, stress_edge, duration_factor, surf_factors, coef_variation = 0.2):
-        """Abstract class constructor
+        """Constructor
 
         Parameters
         ----------
@@ -96,6 +93,54 @@ class GlassType:
         self.coef_variation = coef_variation
         self.surf_factors = surf_factors
     
+    @classmethod
+    def from_name(cls, name):
+        """Class method to creating a GlassType from a string identifier held in the registry.
+
+        Parameters
+        ----------
+        name : ``string``
+            String identifier.
+
+        Returns
+        -------
+        GlassType
+
+        Raises
+        ------
+        ValueError
+            When the registry does not contain the string identifier.
+        """
+
+        if name in _glass_type_registry:
+            return cls(**_glass_type_registry[name])
+        else:
+            raise ValueError(f"The register does not contain the name key {name}.")
+
+    @classmethod
+    def from_abbr(cls, abbr):
+        """Class method to creating a GlassType from a string abbreviation held in the registry.
+
+        Parameters
+        ----------
+        name : ``string``
+            String abbreviation.
+
+        Returns
+        -------
+        GlassType
+
+        Raises
+        ------
+        ValueError
+            When the registry does not contain the string abbreviation.
+        """
+
+        if abbr in _glass_type_abbr:
+            return cls(**_glass_type_registry[_glass_type_abbr[abbr]])
+        else:
+            raise ValueError(f"The register does not contain the abbr key {abbr}.")
+
     @ureg.check(None, '[time]')
     def load_duration_factor(self, time = 3*ureg.sec):
         """Determines the load duration factor for the glass type.
@@ -238,53 +283,146 @@ class GlassType:
     def surf_factors(self, value):
         self._surf_factors = value
 
-class Annealed(GlassType):
-    """Annealed glass type.
+# Glass type registry
+
+_glass_type_registry = {}
+_glass_type_abbr = {}
+
+def register_glass_type(name, stress_surface, stress_edge, duration_factor, coef_variation, surf_factors, *, abbr=None):
+    """Register a new glass type.
+
+    Parameters
+    ----------
+    name : string
+        Identifier
+    stress_surface : Quantity [pressure] i.e. [stress]
+        The base allowable surface stress for the glass type.
+    stress_edge : Quantity [pressure] i.e. [stress]
+        The base allowable edge stress for the glass type.
+    duration_factor : float
+        The duration factor for the glass type.
+    coef_variation  : float, optional 
+        The coefficient of variation for the glass type. 
+        This factor describes the statistical behavior of the failure stress.
+    surf_factors : dict(string, float)
+        The allowable stress reduction factor for different surface treatments.
+        e.g. "Acid etching" can reduce the allowable stress by 0.5 
+    abbr : string, optional
+        Abbreviation, by default None
+
+    Raises
+    ------
+    ValueError
+        If the name identifier already in use.
+    ValueError
+        If the abbreviation identifier already in use.
     """
 
-    def __init__(self):
-        stress_surface = 23.3 * ureg.MPa
-        stress_edge    = 18.3 * ureg.MPa
-        duration_factor = 16
-        coef_variation = 0.22
-        surf_factors = {
-            "None" : 1,
-            "Fritted" : 1,
-            "Acid etching" : 0.5,
-            "Sandblasting" : 0.5
-        }
-        super(Annealed, self).__init__(stress_surface, stress_edge, duration_factor, surf_factors, coef_variation)
+    if name in _glass_type_registry:
+        raise ValueError(f"Name identifier already in use. Deregister `{name}` first.")
 
-class HeatStrengthened(GlassType):
-    """Heat strengthened glass type.
+    if abbr in _glass_type_abbr:
+        raise ValueError(f"Abbreviation identifier already in use. Deregister `{_glass_type_abbr[abbr]}` first.")
+
+    data = {
+        "stress_surface": stress_surface,
+        "stress_edge" : stress_edge,
+        "duration_factor" : duration_factor,
+        "coef_variation" : coef_variation,
+        "surf_factors" : surf_factors
+    }
+
+    _glass_type_registry[name] = data
+    if abbr is not None: _glass_type_abbr[abbr] = name
+
+def deregister_glass_type(name):
+    """Deregister an existing glass type.
+
+    Parameters
+    ----------
+    name : ``string``
+        String identifier
     """
 
-    def __init__(self):
-        stress_surface = 46.6 * ureg.MPa
-        stress_edge    = 36.5 * ureg.MPa
-        duration_factor = 31.7
-        coef_variation = 0.15
-        surf_factors = {
-            "None" : 1,
-            "Fritted" : 1,
-            "Acid etching" : 0.5,
-            "Sandblasting" : 0.5
-        }
-        super(HeatStrengthened, self).__init__(stress_surface, stress_edge, duration_factor, surf_factors, coef_variation)
+    key_list = list(_glass_type_abbr.keys())
+    val_list = list(_glass_type_abbr.values())
+    try:
+        position = val_list.index(name)
+    except ValueError:
+        position = None
+    else:
+        abbr = key_list[position]
+        _glass_type_abbr.pop(abbr, None)
 
-class FullyTempered(GlassType):
-    """Fully tempered glass type.
-    """
+    _glass_type_registry.pop(name, None)
     
-    def __init__(self):
-        stress_surface = 93.1 * ureg.MPa
-        stress_edge    = 73.0 * ureg.MPa
-        duration_factor = 47.5
-        coef_variation = 0.1
-        surf_factors = {
-            "None" : 1,
-            "Fritted" : 1,
-            "Acid etching" : 0.5,
-            "Sandblasting" : 0.5
-        }
-        super(FullyTempered, self).__init__(stress_surface, stress_edge, duration_factor, surf_factors, coef_variation)
+
+def get_glass_types_data():
+    """Get a deep copy of the registry.
+    
+    Returns
+    -------
+    Dict(string, values)
+        A dictionary of all the GlassType parameters, the keys are the string identifiers.
+    """
+
+    return copy.deepcopy(_glass_type_registry)
+
+def get_abbr_data():
+    """Get a deep copy of the abbreviation map.
+    
+    Returns
+    -------
+    Dict(string, string)
+        A dictionary of the string identifiers, the keys are the string abbreviation.
+    """
+
+    return copy.deepcopy(_glass_type_registry)
+
+
+# Register common glass types
+
+register_glass_type(
+    name = "Annealed", 
+    stress_surface = Q_(23.3, "MPa"),
+    stress_edge    = Q_(18.3, "MPa"),
+    duration_factor = 16,
+    coef_variation = 0.22,
+    surf_factors = {
+        "None" : 1,
+        "Fritted" : 1,
+        "Acid etching" : 0.5,
+        "Sandblasting" : 0.5
+    },
+    abbr="AN"
+)
+
+register_glass_type(
+    name = "Heat Strengthened",
+    stress_surface = Q_(46.6, "MPa"),
+    stress_edge    = Q_(36.5, "MPa"),
+    duration_factor = 31.7,
+    coef_variation = 0.15,
+    surf_factors = {
+        "None" : 1,
+        "Fritted" : 1,
+        "Acid etching" : 0.5,
+        "Sandblasting" : 0.5
+    },
+    abbr="HS"
+)
+
+register_glass_type(
+    name="Fully Tempered", 
+    stress_surface = 93.1 * ureg.MPa,
+    stress_edge    = 73.0 * ureg.MPa,
+    duration_factor = 47.5,
+    coef_variation = 0.1,
+    surf_factors = {
+        "None" : 1,
+        "Fritted" : 1,
+        "Acid etching" : 0.5,
+        "Sandblasting" : 0.5
+    },
+    abbr="FT"
+)
