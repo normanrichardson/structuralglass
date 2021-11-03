@@ -52,8 +52,6 @@ class IGUWindDemands:
         # Check that the list unique instances and that only a single type of effective thickness model is used.
         if len(buildup) != len(set(buildup)): 
             raise ValueError("The buildup must contain unique objects, use deep copy.")
-        if len(set(map(lambda x: type(x), buildup)))!=1: 
-            raise ValueError("Mixing of effective thickness models. Only one model should be used.")
         
         self.wind_load = wind_load
         self.buildup = buildup
@@ -197,6 +195,6 @@ class IGUWindDemands:
             r4s = Roarks4side(lite.E, self.dim_x, self.dim_y)
             for ply, h_efs in lite.h_efs.items():
                 r4s.t = h_efs
-                self.stress[ply] = r4s.stress_max(self.wind_load * self.LSF[lite])
+                self._stress[ply] = r4s.stress_max(self.wind_load * self.LSF[lite])
             r4s.t = lite.h_efw
-            self.deflection[lite] = r4s.deflection_max(self.wind_load * self.LSF[lite])
+            self._deflection[lite] = r4s.deflection_max(self.wind_load * self.LSF[lite])
