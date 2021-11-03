@@ -53,15 +53,15 @@ class TestGlassPly(unittest.TestCase):
             lay.GlassPly.from_nominal_thickness(tnom)
         self.assertEqual(str(cm.exception), "Cannot convert from '8 millimeter ** 2' ([length] ** 2) to 'a quantity of' ([length])")
 
-class TestInterLayerStatic(unittest.TestCase):
+class TestInterlayerStatic(unittest.TestCase):
     def setUp(self) -> None:
         self.G_pvb = 0.281*ureg.MPa
         self.t_pvb = 0.89*ureg.mm
-        self.interlayer = lay.InterLayer.from_static(self.t_pvb, self.G_pvb)
-        lay.InterLayer
+        self.interlayer = lay.Interlayer.from_static(self.t_pvb, self.G_pvb)
+        lay.Interlayer
 
     def test_data(self):
-        self.assertIsInstance(self.interlayer, lay.InterLayer)
+        self.assertIsInstance(self.interlayer, lay.Interlayer)
         self.assertEqual(self.interlayer.t, self.t_pvb)
         self.assertEqual(self.interlayer.G, self.G_pvb)
         
@@ -104,11 +104,11 @@ class TestInterlayerProductRegistration(unittest.TestCase):
             lay.register_interlayer_product(name, invalid_data)
         self.assertEqual(str(cm.exception), "The provided data is not rectangular.")
         
-class TestInterLayerProductTable(unittest.TestCase):
+class TestInterlayerProductTable(unittest.TestCase):
     def setUp(self):
         self.t_pvb = 1.52*ureg.mm
         product_name = "Ionoplast Interlayer NCSEA"
-        self.interlayer = lay.InterLayer.from_product_table(self.t_pvb, product_name)
+        self.interlayer = lay.Interlayer.from_product_table(self.t_pvb, product_name)
 
     def test_data(self):
         self.interlayer.temperature = Q_(40,"degC")
@@ -130,30 +130,30 @@ class TestInterLayerProductTable(unittest.TestCase):
             self.interlayer.G
         self.assertEqual(str(cm.exception), "Reference temperature and/or duration not test.")
 
-class TestInvalidInterLayerClassMethods(unittest.TestCase):
+class TestInvalidInterlayerClassMethods(unittest.TestCase):
     def test_invalid_product_name(self):
         t_pvb = 1.52*ureg.mm
         product_name = "product 1"
         with self.assertRaises(ValueError) as cm:
-            lay.InterLayer.from_product_table(t_pvb, product_name)
+            lay.Interlayer.from_product_table(t_pvb, product_name)
         self.assertEqual(str(cm.exception), "The product is not registered in the product registry.")
     def test_invalid_product_thickness(self):
         t_pvb = -1.52*ureg.mm
         product_name = "PVB NCSEA"
         with self.assertRaises(ValueError) as cm:
-            lay.InterLayer.from_product_table(t_pvb, product_name)
+            lay.Interlayer.from_product_table(t_pvb, product_name)
         self.assertEqual(str(cm.exception), "The thickness must be greater than zero [lengh].")
     def test_invalid_static_shear_mod(self):
         t_pvb = 1.52*ureg.mm
         G_pvb = -0.281*ureg.MPa
         with self.assertRaises(ValueError) as cm:
-            lay.InterLayer.from_static(t_pvb, G_pvb)
+            lay.Interlayer.from_static(t_pvb, G_pvb)
         self.assertEqual(str(cm.exception), "The shear modulus must be greater than zero [pressure].")
     def test_invalid_static_thickness(self):
         t_pvb = -1.52*ureg.mm
         G_pvb = 0.281*ureg.MPa
         with self.assertRaises(ValueError) as cm:
-            lay.InterLayer.from_static(t_pvb, G_pvb)
+            lay.Interlayer.from_static(t_pvb, G_pvb)
         self.assertEqual(str(cm.exception), "The thickness must be greater than zero [lengh].")
 
 class TestMonolithicMethod(unittest.TestCase):
@@ -203,7 +203,7 @@ class TestShearTransferCoefMethod(unittest.TestCase):
         t_pvb = 1.52*ureg.mm
         self.ply1 = lay.GlassPly.from_nominal_thickness(self.t1nom)
         self.ply2 = lay.GlassPly.from_nominal_thickness(self.t2nom)
-        self.interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
+        self.interlayer = lay.Interlayer.from_static(t_pvb, G_pvb)
         package = [self.ply1, self.interlayer, self.ply2]
         self.buildup = [et.ShearTransferCoefMethod(package, self.a)]
 

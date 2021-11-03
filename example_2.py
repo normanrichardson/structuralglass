@@ -13,7 +13,7 @@ t2nom = 12*ureg.mm
 # Interlayer PVB at 30degC for 1 day load duration
 G_pvb = 0.281*ureg.MPa
 t_pvb = 0.89*ureg.mm
-interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
+interlayer = lay.Interlayer.from_static(t_pvb, G_pvb)
 
 # Plys
 ply1 = lay.GlassPly.from_nominal_thickness(t1nom)

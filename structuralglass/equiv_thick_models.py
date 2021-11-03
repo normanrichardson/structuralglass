@@ -56,7 +56,7 @@ import abc
 import itertools
 
 from . import ureg, Q_
-from .layers import GlassPly, InterLayer
+from .layers import GlassPly, Interlayer
 
 class GlassLiteEquiv:
     """
@@ -70,7 +70,7 @@ class GlassLiteEquiv:
 
         Parameters
         ----------
-        ply : ply (List[GlassPly and/or InterLayer])
+        ply : ply (List[GlassPly and/or Interlayer])
             The list of glass layers and interlayers that form a laminate.
         """
         self._h_efw = None
@@ -94,7 +94,7 @@ class GlassLiteEquiv:
 
         Parameters
         ----------
-        plys : List[GlassPly and InterLayer (optional)]
+        plys : List[GlassPly and Interlayer (optional)]
         
         Returns
         -------
@@ -127,7 +127,7 @@ class GlassLiteEquiv:
 
     @property
     def ply(self):
-        """A list of glass layers and interlayers that form a laminate as a List[GlassPly and/or InterLayer]
+        """A list of glass layers and interlayers that form a laminate as a List[GlassPly and/or Interlayer]
 
         Raises
         ------
@@ -295,8 +295,8 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
 
         Parameters
         ----------
-        plys : List[GlassPly and InterLayer]
-            The list of glass layers and InterLayers that form a laminate.
+        plys : List[GlassPly and Interlayer]
+            The list of glass layers and Interlayers that form a laminate.
         panel_min_dim : Quantity [length]
             Minimum dimension of the rectangular panel
         """
@@ -326,7 +326,7 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         if len(plys)==3:
             if isinstance(plys[0],GlassPly):
                 if isinstance(plys[2],GlassPly):
-                    if isinstance(plys[1],InterLayer):
+                    if isinstance(plys[1],Interlayer):
                         valid = True
         if valid:
             set_E =set([plys[0].E, plys[2].E])

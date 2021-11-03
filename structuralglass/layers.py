@@ -38,14 +38,14 @@ In order to not limit the user to nominal thicknesses, a :class:`~structuralglas
 
 Interlayers
 -----------
-An :class:`~structuralglass.layers.InterLayer` can be defined in 2 ways:
+An :class:`~structuralglass.layers.Interlayer` can be defined in 2 ways:
 
 - as a static interlayer
 - as a dynamic interlayer
 
-Static :class:`~structuralglass.layers.InterLayer` are not backed by manufactures data.
+Static :class:`~structuralglass.layers.Interlayer` are not backed by manufactures data.
 They are static in the sense that the shear modulus is changed manually.
-A static :class:`~structuralglass.layers.InterLayer` can be created via the :meth:`~structuralglass.layers.InterLayer.from_static` class method.
+A static :class:`~structuralglass.layers.Interlayer` can be created via the :meth:`~structuralglass.layers.Interlayer.from_static` class method.
 
 ::
 
@@ -55,18 +55,18 @@ A static :class:`~structuralglass.layers.InterLayer` can be created via the :met
     # Interlayer PVB at 30degC for 1 day load duration
     G_pvb = 0.281*ureg.MPa
     t_pvb = 0.89*ureg.mm
-    interlayer = lay.InterLayer.from_static(t_pvb, G_pvb)
+    interlayer = lay.Interlayer.from_static(t_pvb, G_pvb)
 
 It is common for interlayer manufacturers to provide material properties in tabulated forms.
 This is because the laminates are viscoelastic materials and their material properties depend on load duration and temperature.
 So, the manufacture provides tabulated "effective" data for a load duration and temperature.
 
-Dynamic :class:`~structuralglass.layers.InterLayer` are backed by manufactures tabular data.
+Dynamic :class:`~structuralglass.layers.Interlayer` are backed by manufactures tabular data.
 They are dynamic in the sense that the shear modulus can be changed by providing a new temperature and load duration.
 For gaps in the manufactures data (for example, the shear modulus is given for 10degC and 20degC and 15degC is set), the tabular data is interpolated linearly.
 Extrapolation is not done and capped to tabulated values.
 This functionality is provided by scipy's interp2d function.
-A dynamic :class:`~structuralglass.layers.InterLayer` can be created via the :meth:`~structuralglass.layers.InterLayer.from_product_table` class method.
+A dynamic :class:`~structuralglass.layers.Interlayer` can be created via the :meth:`~structuralglass.layers.Interlayer.from_product_table` class method.
 
 ::
 
@@ -75,7 +75,7 @@ A dynamic :class:`~structuralglass.layers.InterLayer` can be created via the :me
 
     t_pvb = 1.52*ureg.mm
     product_name = "Ionoplast Interlayer NCSEA"
-    interlayer = lay.InterLayer.from_product_table(t_pvb, product_name)
+    interlayer = lay.Interlayer.from_product_table(t_pvb, product_name)
     
     #set the load duration and temperature
     interlayer.duration = Q_(1,"month")
@@ -107,7 +107,7 @@ Data can be removed via the :func:`~structuralglass.layers.deregister_interlayer
 
     # choose an interlayer thickness
     t_pvb = Q_(1.52, "mm")
-    interlayer = lay.InterLayer.from_product_table(t_pvb, name)
+    interlayer = lay.Interlayer.from_product_table(t_pvb, name)
 
     # set the load duration and temperature
     interlayer.duration = Q_(5,"min")
@@ -305,7 +305,7 @@ class GlassPly:
         self._t_min = value
         self._t_nom = None
 
-class InterLayer:
+class Interlayer:
     """
     A class to represent a glass interlayer(e.g. PVB or SG), and its mechanical properties. 
     Rate dependent properties can be considered via the use of a product table or registered product name.

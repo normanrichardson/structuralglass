@@ -53,7 +53,7 @@ Example use
    # Interlayer details
    t_pvb = Q_(1.52, "mm")
    product_name = "PVB NCSEA"
-   interlayer = lay.InterLayer.from_product_table(t_pvb, product_name)
+   interlayer = lay.Interlayer.from_product_table(t_pvb, product_name)
    interlayer.duration = Q_(3,"sec")
    interlayer.temperature = Q_(30,"degC")
 

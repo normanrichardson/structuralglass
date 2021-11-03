@@ -13,7 +13,7 @@ GlassPly Class
 Interlayer Class
 ----------------
 
-.. autoclass:: structuralglass.layers.InterLayer
+.. autoclass:: structuralglass.layers.Interlayer
     :members:
     :special-members: __init__
 
