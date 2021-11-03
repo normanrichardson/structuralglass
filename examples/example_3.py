@@ -1,9 +1,9 @@
 
 # Example from E1300-16 example 13
 
-from structuralglass import ureg, Q_
-import structuralglass.layers as lay
 import structuralglass.equiv_thick_models as et
+import structuralglass.layers as lay
+from structuralglass import Q_, ureg
 
 # Plate dimensions
 a = 1000 * ureg.mm

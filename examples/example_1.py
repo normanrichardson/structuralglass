@@ -1,11 +1,11 @@
 
 # Example from NCSEA Engineering Structural Glass Design Guide chapter 8 example 5
 
-from structuralglass import ureg, Q_
+import structuralglass.demands as dem
+import structuralglass.equiv_thick_models as et
 import structuralglass.glass_types as gt
 import structuralglass.layers as lay
-import structuralglass.equiv_thick_models as et
-import structuralglass.demands as dem
+from structuralglass import Q_, ureg
 
 # Plate dimensions
 a = 4000 * ureg.mm

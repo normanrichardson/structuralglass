@@ -57,9 +57,12 @@ The underlying data can be viewed via the :func:`~structuralglass.glass_types.ge
 The abbreviation mapping can be viewed via the  :func:`~structuralglass.glass_types.get_abbr_data` function.
 """
 
-from . import ureg, Q_
-import scipy.stats as ss
 import copy
+
+import scipy.stats as ss
+
+from . import Q_, ureg
+
 
 class GlassType:
     """

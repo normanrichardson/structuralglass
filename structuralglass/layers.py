@@ -117,10 +117,11 @@ Data can be removed via the :func:`~structuralglass.layers.deregister_interlayer
 
 """
 
-from . import ureg, Q_
-from scipy import interpolate
-import pint
 import numpy as np
+import pint
+from scipy import interpolate
+
+from . import Q_, ureg
 
 t_min_lookup_metric = {
             2.0: 1.80,

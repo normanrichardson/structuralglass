@@ -55,8 +55,9 @@ The message is used to raise a ValueError.
 import abc
 import itertools
 
-from . import ureg, Q_
+from . import Q_, ureg
 from .layers import GlassPly, Interlayer
+
 
 class GlassLiteEquiv:
     """

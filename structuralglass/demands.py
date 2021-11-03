@@ -36,9 +36,9 @@ In general, more sophisticated models are required.
 
 """
 
-from pint.registry_helpers import check
-from . import ureg, Q_
+from . import Q_, ureg
 from .helpers import Roarks4side
+
 
 class IGUWindDemands:
     """A simplified method for IGU under wind load (short duration).

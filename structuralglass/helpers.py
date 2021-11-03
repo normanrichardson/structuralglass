@@ -1,5 +1,7 @@
 from scipy import interpolate
-from . import ureg, Q_
+
+from . import Q_, ureg
+
 
 class Roarks4side:
     """Roarks four sided simply supported plate calculations.

@@ -1,12 +1,14 @@
 import unittest
+
 import pint
-from pint import unit
-from structuralglass import ureg, Q_
-import structuralglass.glass_types as gt
-import structuralglass.layers as lay
-import structuralglass.equiv_thick_models as et
-import structuralglass.helpers as hp
+
 import structuralglass.demands as dem
+import structuralglass.equiv_thick_models as et
+import structuralglass.glass_types as gt
+import structuralglass.helpers as hp
+import structuralglass.layers as lay
+from structuralglass import Q_, ureg
+
 
 class TestGlassPly(unittest.TestCase):
     def test_from_nominal_thickness_metric(self):
