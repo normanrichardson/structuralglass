@@ -358,7 +358,7 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         h_2 = self.ply[2].t_min
         h_v = self.ply[1].t
         G_interlayer = self.ply[1].G
-        E_glass = self.ply[0].E
+        E_glass = self.E
         h_s = 0.5*(h_1 + h_2)+h_v
         h_s1 = h_s*h_1/(h_1+h_2)
         h_s2 = h_s*h_2/(h_1+h_2)
