@@ -11,7 +11,8 @@ todo*
 testing.py
 
 # Place for dev specific virtual-environments
-env/*
+venv/*
+.venv/*
 
 # Place for dev specific references
 reference/*
