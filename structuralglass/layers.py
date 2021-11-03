@@ -311,7 +311,7 @@ class Interlayer:
     Rate dependent properties can be considered via the use of a product table or registered product name.
     """
 
-    def __init__(self, t, **kwargs):
+    def __init__(self, t, *, G=None, G_table=None):
         """Constructor
 
         Parameters
@@ -334,14 +334,12 @@ class Interlayer:
         """
 
         self.t = t
-        G_tmp = kwargs.get('G',None)
-        G_table_tmp = kwargs.get('G_table',None)
-        if G_tmp is None and G_table_tmp is None:
+        if G is None and G_table is None:
             raise ValueError("Either G or G_table must be provided.")
-        elif  G_tmp is not None and G_table_tmp is not None:
+        elif G is not None and G_table is not None:
             raise ValueError("Only one of G or G_table must be provided.")
-        self._G = G_tmp
-        self.G_table = G_table_tmp
+        self._G = G
+        self.G_table = G_table
         if self.G_table is not None:
             self._temperature = None
             self._duration = None
