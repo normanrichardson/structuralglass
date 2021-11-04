@@ -1,7 +1,7 @@
 """
-When determining demands - depending on project specifics, the maturity of the project, etc -
-it is often useful to have simple demand calculations.
-In general, more sophisticated models are required. 
+When determining demands - depending on project specifics, the maturity of the
+project, etc - it is often useful to have simple demand calculations.
+In general, more sophisticated models are required.
 
 ::
 
@@ -45,7 +45,7 @@ class IGUWindDemands:
     The method uses stiffness based load sharing to distribute the wind load
     and equivalent thickness to determine stress and deflections.
     """
-    
+
     def __init__(self, buildup, wind_load, dim_x, dim_y):
         """Constructor.
 
@@ -65,13 +65,17 @@ class IGUWindDemands:
         ValueError
             If buildup contains duplicate objects, to avoid this use deep copy.
         ValueError
-            If a mixture of effective thickness models is used. Only one model type should be used.
+            If a mixture of effective thickness models is used. Only one model
+            type should be used.
         """
 
-        # Check that the list unique instances and that only a single type of effective thickness model is used.
-        if len(buildup) != len(set(buildup)): 
-            raise ValueError("The buildup must contain unique objects, use deep copy.")
-        
+        # Check that the list unique instances and that only a single type of
+        # effective thickness model is used.
+        if len(buildup) != len(set(buildup)):
+            raise ValueError(
+                "The buildup must contain unique objects, use deep copy."
+            )
+
         self.wind_load = wind_load
         self.buildup = buildup
         self._stress = {}
@@ -82,10 +86,10 @@ class IGUWindDemands:
     @property
     def wind_load(self):
         """The wind load in Quantity [pressure].
-        """ 
+        """
 
         return self._wind_load
-    
+
     @wind_load.setter
     @ureg.check(None, "[pressure]")
     def wind_load(self, value):
@@ -97,20 +101,22 @@ class IGUWindDemands:
         """
 
         return self._buildup
-    
+
     @buildup.setter
     def buildup(self, value):
         self._buildup = value
-        denom = sum(map(lambda x: x.E*(x.h_efw)**3 , self.buildup))
-        self._LSF = dict(zip(self.buildup,map(lambda x: x.E*(x.h_efw)**3/denom , self.buildup)))
-    
+        denom = sum(map(lambda x: x.E*(x.h_efw)**3, self.buildup))
+        self._LSF = dict(zip(
+            self.buildup, map(lambda x: x.E*(x.h_efw)**3/denom, self.buildup)
+        ))
+
     @property
     def stress(self):
         """The stress as a Dict[GlassPly, Quantity [pressure]]
         """
 
         return self._stress
-    
+
     @property
     def deflection(self):
         """The deflection as a Dict[GlassLiteEquiv, Quantity [pressure]]
@@ -136,11 +142,12 @@ class IGUWindDemands:
         """
 
         return self._dim_x
-    
+
     @dim_x.setter
     @ureg.check(None, '[length]')
     def dim_x(self, value):
-        if value < Q_(0,'mm'): raise ValueError("Dimensions must be greater than zero.")
+        if value < Q_(0, 'mm'):
+            raise ValueError("Dimensions must be greater than zero.")
         self._dim_x = value
 
     @property
@@ -154,12 +161,13 @@ class IGUWindDemands:
         """
 
         return self._dim_y
-    
+
     @dim_y.setter
     @ureg.check(None, '[length]')
     def dim_y(self, value):
-        if value < Q_(0,'mm'): raise ValueError("Dimensions must be greater than zero.")
-        self._dim_y = value    
+        if value < Q_(0, 'mm'):
+            raise ValueError("Dimensions must be greater than zero.")
+        self._dim_y = value
 
     def solve(self):
         """Runs the solver.
@@ -167,8 +175,9 @@ class IGUWindDemands:
 
         for lite in self.buildup:
             r4s = Roarks4side(lite.E, self.dim_x, self.dim_y)
+            lite_load = self.wind_load * self.LSF[lite]
             for ply, h_efs in lite.h_efs.items():
                 r4s.t = h_efs
-                self._stress[ply] = r4s.stress_max(self.wind_load * self.LSF[lite])
+                self._stress[ply] = r4s.stress_max(lite_load)
             r4s.t = lite.h_efw
-            self._deflection[lite] = r4s.deflection_max(self.wind_load * self.LSF[lite])
+            self._deflection[lite] = r4s.deflection_max(lite_load)

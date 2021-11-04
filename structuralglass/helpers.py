@@ -7,8 +7,8 @@ class Roarks4side:
     """Roarks four sided simply supported plate calculations.
     """
 
-    @ureg.check(None, '[pressure]', '[length]','[length]', '[length]')
-    def __init__(self, E, dim_x, dim_y, t=Q_(1,"inch")):
+    @ureg.check(None, '[pressure]', '[length]', '[length]', '[length]')
+    def __init__(self, E, dim_x, dim_y, t=Q_(1, "inch")):
         """Constructor
 
         Parameters
@@ -29,25 +29,28 @@ class Roarks4side:
         self.t = t
         self.E = E
         self._reset_ratio()
-        
+
         ratios = [1, 1.2, 1.4, 1.6, 1.8, 2, 3, 4, 5, 1e16]
-        beta = [0.2874, 0.3762, 0.453, 0.5172, 0.5688, 0.6102, 0.7134, 0.741, 0.7476, 0.75]
-        alpha = [0.044, 0.0616, 0.077, 0.0906, 0.1017, 0.111, 0.1335, 0.14, 0.1417, 0.1421]
-        gamma = [0.42, 0.455, 0.478, 0.491, 0.499, 0.503, 0.505, 0.502, 0.501, 0.5]
+        beta = [0.2874, 0.3762, 0.453, 0.5172, 0.5688, 0.6102, 0.7134, 0.741,
+                0.7476, 0.75]
+        alpha = [0.044, 0.0616, 0.077, 0.0906, 0.1017, 0.111, 0.1335, 0.14,
+                 0.1417, 0.1421]
+        gamma = [0.42, 0.455, 0.478, 0.491, 0.499, 0.503, 0.505, 0.502, 0.501,
+                 0.5]
 
         self._beta = interpolate.interp1d(ratios, beta)
         self._alpha = interpolate.interp1d(ratios, alpha)
         self._gamma = interpolate.interp1d(ratios, gamma)
 
     @ureg.check(None, '[pressure]')
-    def stress_max(self,q):
+    def stress_max(self, q):
         """Calculates the plates max stress.
 
         Parameters
         ----------
         q : Quantity['pressure']
             The uniform load on the plate.
-        
+
         Returns
         -------
         Quantity['pressure']
@@ -58,7 +61,7 @@ class Roarks4side:
         return value.to_reduced_units()
 
     @ureg.check(None, '[pressure]')
-    def deflection_max(self,q):
+    def deflection_max(self, q):
         """Calculates the plates max deflection.
 
         Parameters
@@ -76,7 +79,7 @@ class Roarks4side:
         return value.to_reduced_units()
 
     @ureg.check(None, '[pressure]')
-    def reaction_max(self,q):
+    def reaction_max(self, q):
         """Calculates the plates max reaction force.
 
         Parameters
@@ -94,7 +97,10 @@ class Roarks4side:
         return value.to_reduced_units()
 
     def _reset_ratio(self):
-        self._a, self._b = (self.dim_x, self.dim_y) if self.dim_x > self.dim_y else (self.dim_y, self.dim_x)
+        if self.dim_x > self.dim_y:
+            self._a, self._b = (self.dim_x, self.dim_y)
+        else:
+            self._a, self._b = (self.dim_y, self.dim_x)
         self._ratio = float(self._a/self._b)
 
     @property
@@ -108,15 +114,16 @@ class Roarks4side:
         """
 
         return self._dim_x
-    
+
     @dim_x.setter
     @ureg.check(None, "[length]")
     def dim_x(self, value):
-        if value < Q_(0,'mm'): raise ValueError("Dimensions must be greater than zero.")
+        if value < Q_(0, 'mm'):
+            raise ValueError("Dimensions must be greater than zero.")
         self._dim_x = value
         if self._ratio is not None:
             self._reset_ratio()
-    
+
     @property
     def dim_y(self):
         """The y dimension of the plate in Quantity['length']
@@ -128,15 +135,16 @@ class Roarks4side:
         """
 
         return self._dim_y
-    
+
     @dim_y.setter
     @ureg.check(None, "[length]")
-    def dim_y(self,value):
-        if value < Q_(0,'mm'): raise ValueError("Dimensions must be greater than zero.")
+    def dim_y(self, value):
+        if value < Q_(0, 'mm'):
+            raise ValueError("Dimensions must be greater than zero.")
         self._dim_y = value
         if self._ratio is not None:
             self._reset_ratio()
-    
+
     @property
     def t(self):
         """The thickness of the plate in Quantity['length'].
@@ -152,7 +160,8 @@ class Roarks4side:
     @t.setter
     @ureg.check(None, '[length]')
     def t(self, value):
-        if value < Q_(0,'mm'): raise ValueError("Thickness must be greater than zero.")
+        if value < Q_(0, 'mm'):
+            raise ValueError("Thickness must be greater than zero.")
         self._t = value
 
     @property
@@ -170,5 +179,6 @@ class Roarks4side:
     @E.setter
     @ureg.check(None, '[pressure]')
     def E(self, value):
-        if value < Q_(0,'MPa'): raise ValueError("Elastic modulus must be greater than zero.")
+        if value < Q_(0, 'MPa'):
+            raise ValueError("Elastic modulus must be greater than zero.")
         self._E = value
