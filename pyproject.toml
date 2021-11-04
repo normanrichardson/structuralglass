@@ -9,3 +9,16 @@ build-backend = "setuptools.build_meta"
 profile = "black"
 src_paths = ["structuralglass"]
 multi_line_output = 3
+
+[tool.black]
+line-length = 79
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | \venv
+  | build
+  | dist
+)/
+'''
