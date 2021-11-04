@@ -25,12 +25,15 @@ ft.coef_variation = 0.2
 # The allowable stress is greater than shown in NCSEA as it looks like NCSEA
 # used the HS 10 year load duration factor. Here the FT 3s load duration factor
 # is used.
-allow_stress = ft.prob_breakage_factor(1/1000) \
-    * ft.load_duration_factor(Q_(3, "sec")) \
-    * ft.surf_treat_factor("None") * ft.stress_edge
+allow_stress = (
+    ft.prob_breakage_factor(1 / 1000)
+    * ft.load_duration_factor(Q_(3, "sec"))
+    * ft.surf_treat_factor("None")
+    * ft.stress_edge
+)
 
 # Allowable deflection
-defl_max = min(a, b)/75
+defl_max = min(a, b) / 75
 
 # Plys
 ply1 = lay.GlassPly.from_nominal_thickness(t1nom)
@@ -56,7 +59,7 @@ print("Effective displacement thickness of package 1:", end=" ")
 print(f"{ package1.h_efw.to('in') :.2f~P}")
 print(
     "Effective stress thickness of package 2 with reference to the 1st ply:",
-    end=" "
+    end=" ",
 )
 print(f"{ package2.h_efs[ply3].to('in') :.2f~P}", end="\n\n")
 
@@ -64,7 +67,7 @@ print("-------------LSF values of panel-------------")
 print(f"Load share factor of package 1: { panel.LSF[package1] :.3f~P}")
 print(
     f"Load share factor of package 2: { panel.LSF[package2] :.3f~P}",
-    end="\n\n"
+    end="\n\n",
 )
 
 print("-------------Stress and utilizations values of plys-------------")
@@ -76,7 +79,7 @@ print(f"{ (panel.stress[ply2]/allow_stress).to_reduced_units() :.2%~P}")
 print(f"Stress in ply 3: { panel.stress[ply3].to('ksi') :.2f~P} =>", end=" ")
 print(
     f"{ (panel.stress[ply3]/allow_stress).to_reduced_units() :.2%~P}",
-    end="\n\n"
+    end="\n\n",
 )
 
 print("-------------Displacement values of the package-------------")

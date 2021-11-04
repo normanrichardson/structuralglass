@@ -72,7 +72,8 @@ class GlassLiteEquiv:
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, ply):
-        """Constructor
+        """
+        Constructor.
 
         Parameters
         ----------
@@ -91,14 +92,14 @@ class GlassLiteEquiv:
 
     @abc.abstractmethod
     def _calc_equiv_thickness(self):
-        """Abstract method to determine the equivalent thicknesses.
-        """
+        """Abstract method to determine the equivalent thicknesses."""
 
         return
 
     @abc.abstractmethod
     def _validate(self, plys):
-        """Abstract method to valadate the plys.
+        """
+        Abstract method to valadate the plys.
 
         Parameters
         ----------
@@ -114,21 +115,25 @@ class GlassLiteEquiv:
 
     @abc.abstractmethod
     def _determine_package_E(self):
-        """Abstract method to determine the packages elastic modulus.
+        """
+        Abstract method to determine the packages elastic modulus.
         """
 
         return
 
     @property
     def h_efw(self):
-        """The equivalent laminate thickness for displacement as a Quantity [length]
+        """
+        The equivalent laminate thickness for displacement as a
+        Quantity [length]
         """
 
         return self._h_efw
 
     @property
     def h_efs(self):
-        """The equivalent laminate thickness for the stress in the associated
+        """
+        The equivalent laminate thickness for the stress in the associated
         plys as a Dict[GlassPly, Quantity [length]]
         """
 
@@ -136,7 +141,8 @@ class GlassLiteEquiv:
 
     @property
     def ply(self):
-        """A list of glass layers and interlayers that form a laminate as a
+        """
+        A list of glass layers and interlayers that form a laminate as a
         List[GlassPly and/or Interlayer]
 
         Raises
@@ -149,7 +155,8 @@ class GlassLiteEquiv:
 
     @property
     def E(self):
-        """The elastic modulus for the formulation as a Quantity [pressure]
+        """
+        The elastic modulus for the formulation as a Quantity [pressure]
         """
 
         return self._E
@@ -173,7 +180,8 @@ class MonolithicMethod(GlassLiteEquiv):
     """
 
     def __init__(self, plys):
-        """Constructor for a liminate's behaviour.
+        """
+        Constructor for a liminate's behaviour.
 
         Parameters
         ----------
@@ -184,16 +192,21 @@ class MonolithicMethod(GlassLiteEquiv):
         super(MonolithicMethod, self).__init__(plys)
 
     def _calc_equiv_thickness(self):
-        """Method that calculates the effective thicknesses.
+        """
+        Calculates the effective thicknesses.
+
         The sum of the plys minimum thicknesses is used.
         """
 
         self._h_efw = sum((ii.t_min for ii in self._ply))
-        self._h_efs = dict(zip(self._ply,
-                           itertools.repeat(self.h_efw, len(self._ply))))
+        self._h_efs = dict(
+            zip(self._ply, itertools.repeat(self.h_efw, len(self._ply)))
+        )
 
     def _determine_package_E(self):
-        """Method to determine the elastic modulus for the formulation.
+        """
+        Assign the elastic modulus for the formulation.
+
         As the validation function is already checks the elastic modulus
         of all GlassPly are the same, take the 1st plys elastic modulus.
         """
@@ -201,7 +214,8 @@ class MonolithicMethod(GlassLiteEquiv):
         self._E = self.ply[0].E
 
     def _validate(self, plys):
-        """Method that validates the data in the plys.
+        """
+        Validate the data in the plys.
 
         1. Checks the list is only contains type GlassPly.
         2. Checks the elastic modulus of all GlassPly are the same.
@@ -240,7 +254,8 @@ class NonCompositeMethod(GlassLiteEquiv):
     """
 
     def __init__(self, plys):
-        """Constructor for a liminate's behaviour.
+        """
+        Constructor for a liminate's behaviour.
 
         Parameters
         ----------
@@ -251,7 +266,9 @@ class NonCompositeMethod(GlassLiteEquiv):
         super(NonCompositeMethod, self).__init__(plys)
 
     def _calc_equiv_thickness(self):
-        """Method that calculates the effective thicknesses.
+        """
+        Calculate the effective thicknesses.
+
         The laminates effective thickness is for:
 
             * deflection: the square root of the sum of the minimum
@@ -259,13 +276,18 @@ class NonCompositeMethod(GlassLiteEquiv):
             * stress: cubed root of the sum of the minimum thicknesses cubed
 
         """
-        def func(n): return sum(ii.t_min**n for ii in self.ply)**(1/n)
-        self._h_efs = dict(zip(self.ply,
-                           itertools.repeat(func(2), len(self.ply))))
+
+        def func(n):
+            return sum(ii.t_min ** n for ii in self.ply) ** (1 / n)
+
+        self._h_efs = dict(
+            zip(self.ply, itertools.repeat(func(2), len(self.ply)))
+        )
         self._h_efw = func(3)
 
     def _determine_package_E(self):
-        """Method to determine the elastic modulus for the formulation.
+        """Elastic modulus for the formulation.
+
         As the validation function is already checks the elastic modulus
         of all GlassPly are the same, take the 1st plys elastic modulus.
         """
@@ -273,7 +295,8 @@ class NonCompositeMethod(GlassLiteEquiv):
         self._E = self.ply[0].E
 
     def _validate(self, plys):
-        """Method that validates the data in the plys.
+        """
+        Method that validates the data in the plys.
 
         1. Checks the list is only contains type GlassPly
         2. Checks the elastic modulus of all GlassPly are the same.
@@ -309,7 +332,8 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
     """
 
     def __init__(self, plys, panel_min_dim):
-        """Constructor for a liminate's behaviour.
+        """
+        Constructor for a liminate's behaviour.
 
         Parameters
         ----------
@@ -324,7 +348,8 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         super(ShearTransferCoefMethod, self).__init__(plys)
 
     def _validate(self, plys):
-        """Method that validates the data in the plys.
+        """
+        Validate the data in the plys.
 
          1. This formulation is only valid for plys with that are [GlassPly,
             Interlayer, GlassPly].
@@ -352,12 +377,16 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
             if len(set_E) != 1:
                 msg = "The plys must have the same elastic modulus."
         else:
-            msg = ("Method is only valid a list of [GlassPly, Interlayer, "
-                   "GlassPly].")
+            msg = (
+                "Method is only valid a list of [GlassPly, Interlayer, "
+                "GlassPly]."
+            )
         return valid, msg
 
     def _calc_equiv_thickness(self):
-        """Method that calculates the effective thicknesses.
+        """
+        Calculate the effective thicknesses.
+
         This method was originally proposed by Bennison-Wolfel and referenced
         in ASTM E1300.
         """
@@ -367,21 +396,32 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         h_v = self.ply[1].t
         G_interlayer = self.ply[1].G
         E_glass = self.E
-        h_s = 0.5*(h_1 + h_2)+h_v
-        h_s1 = h_s*h_1/(h_1+h_2)
-        h_s2 = h_s*h_2/(h_1+h_2)
-        I_s = h_1*h_s2**2 + h_2*h_s1**2
-        self.Gamma = 1.0 / (1.0 + self.beta*E_glass*I_s*h_v /
-                            (G_interlayer * h_s**2 * self.panel_min_dim**2))
-        self._h_efw = (h_1**3 + h_2**3 + 12*self.Gamma*I_s)**(1/3.0)
+        h_s = 0.5 * (h_1 + h_2) + h_v
+        h_s1 = h_s * h_1 / (h_1 + h_2)
+        h_s2 = h_s * h_2 / (h_1 + h_2)
+        I_s = h_1 * h_s2 ** 2 + h_2 * h_s1 ** 2
+        self.Gamma = 1.0 / (
+            1.0
+            + self.beta
+            * E_glass
+            * I_s
+            * h_v
+            / (G_interlayer * h_s ** 2 * self.panel_min_dim ** 2)
+        )
+        self._h_efw = (h_1 ** 3 + h_2 ** 3 + 12 * self.Gamma * I_s) ** (
+            1 / 3.0
+        )
         self._h_efs = {}
-        self._h_efs[self.ply[0]] = (self.h_efw**3 /
-                                    (h_1+2*self.Gamma*h_s2))**(0.5)
-        self._h_efs[self.ply[2]] = (self.h_efw**3 /
-                                    (h_2+2*self.Gamma*h_s1))**(0.5)
+        self._h_efs[self.ply[0]] = (
+            self.h_efw ** 3 / (h_1 + 2 * self.Gamma * h_s2)
+        ) ** (0.5)
+        self._h_efs[self.ply[2]] = (
+            self.h_efw ** 3 / (h_2 + 2 * self.Gamma * h_s1)
+        ) ** (0.5)
 
     def _determine_package_E(self):
-        """Method to determine the elastic modulus for the formulation.
+        """
+        Method to determine the elastic modulus for the formulation.
         As the validation function is already checks the elastic modulus
         of all GlassPly are the same, take the 1st plys elastic modulus.
         """
@@ -390,7 +430,8 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
 
     @property
     def beta(self):
-        """The beta value of the formulation.
+        """
+        The beta value of the formulation.
         A coefficient  dependent  on  the  boundary  and  loading  conditions.
 
         Returns
@@ -406,7 +447,8 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
 
     @property
     def panel_min_dim(self):
-        """The minimum dimension of the rectangular panel.
+        """
+        The minimum dimension of the rectangular panel.
 
         Returns
         -------
@@ -421,7 +463,7 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         return self._panel_min_dim
 
     @panel_min_dim.setter
-    @ureg.check(None, '[length]')
+    @ureg.check(None, "[length]")
     def panel_min_dim(self, value):
         if value < Q_(0, "ft"):
             raise ValueError(

@@ -9,7 +9,7 @@ except ImportError:
     import importlib_resources as pkg_resources
 
 # Load the file stream for the units file
-unit_file = pkg_resources.open_text(resources, 'unit_def.txt')
+unit_file = pkg_resources.open_text(resources, "unit_def.txt")
 
 # Setup pint for the package
 ureg = pint.UnitRegistry()

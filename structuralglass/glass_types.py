@@ -75,10 +75,17 @@ class GlassType:
     A class that represents the stress factors in glass.
     """
 
-    @ureg.check(None, '[pressure]', '[pressure]', None, None, None)
-    def __init__(self, stress_surface, stress_edge, duration_factor,
-                 surf_factors, coef_variation=0.2):
-        """Constructor
+    @ureg.check(None, "[pressure]", "[pressure]", None, None, None)
+    def __init__(
+        self,
+        stress_surface,
+        stress_edge,
+        duration_factor,
+        surf_factors,
+        coef_variation=0.2,
+    ):
+        """
+        Constructor.
 
         Parameters
         ----------
@@ -106,7 +113,8 @@ class GlassType:
 
     @classmethod
     def from_name(cls, name):
-        """Class method to creating a GlassType from a string identifier held
+        """
+        Class method to creating a GlassType from a string identifier held
         in the registry.
 
         Parameters
@@ -127,12 +135,14 @@ class GlassType:
         if name in _glass_type_registry:
             return cls(**_glass_type_registry[name])
         else:
-            raise ValueError("The register does not contain the name" /
-                             f"key {name}.")
+            raise ValueError(
+                "The register does not contain the name" / f"key {name}."
+            )
 
     @classmethod
     def from_abbr(cls, abbr):
-        """Class method to creating a GlassType from a string abbreviation
+        """
+        Class method to creating a GlassType from a string abbreviation
         held in the registry.
 
         Parameters
@@ -153,12 +163,14 @@ class GlassType:
         if abbr in _glass_type_abbr:
             return cls(**_glass_type_registry[_glass_type_abbr[abbr]])
         else:
-            raise ValueError("The register does not contain the abbr key "
-                             f"{abbr}.")
+            raise ValueError(
+                "The register does not contain the abbr key " f"{abbr}."
+            )
 
-    @ureg.check(None, '[time]')
+    @ureg.check(None, "[time]")
     def load_duration_factor(self, time=Q_(3, "sec")):
-        """Determines the load duration factor for the glass type.
+        """
+        Determines the load duration factor for the glass type.
 
         Parameters
         ----------
@@ -170,12 +182,13 @@ class GlassType:
             Load duration factor to apply to the base stress.
         """
 
-        return 1 / ((time/(3*ureg.sec))**(1/self.duration_factor))
+        return 1 / ((time / (3 * ureg.sec)) ** (1 / self.duration_factor))
 
     def design_factor(self, ratio):
-        """Determines the design factor for the glass type based on a given failure
-        ratio (e.g. 1/1000). This can be used to convert the average breaking
-        stress to the stress corresponding with the failure ratio.
+        """
+        Determines the design factor for the glass type based on a given
+        failure ratio (e.g. 1/1000). This can be used to convert the average
+        breaking stress to the stress corresponding with the failure ratio.
 
         Parameters
         ----------
@@ -188,10 +201,11 @@ class GlassType:
             The design factor for the glass type.
         """
 
-        return 1 / (1 - self.coef_variation*ss.norm.ppf(1-ratio))
+        return 1 / (1 - self.coef_variation * ss.norm.ppf(1 - ratio))
 
     def prob_breakage_factor(self, ratio):
-        """Determines the probability of breakage factor for the glass type based
+        """
+        Determines the probability of breakage factor for the glass type based
         on a given failure ratio (e.g. 1/1000).
 
         Parameters
@@ -208,7 +222,8 @@ class GlassType:
         return self.design_factor(0.008) / self.design_factor(ratio)
 
     def surf_treat_factor(self, surf_treat):
-        """Looks up the reduction associated with a surface treatment
+        """
+        Looks up the reduction associated with a surface treatment
 
         Parameters
         ----------
@@ -225,7 +240,8 @@ class GlassType:
 
     @property
     def stress_surface(self):
-        """The base allowable surface stress in Quantity [pressure].
+        """
+        The base allowable surface stress in Quantity [pressure].
 
         Raises
         ------
@@ -236,16 +252,18 @@ class GlassType:
         return self._stress_surface
 
     @stress_surface.setter
-    @ureg.check(None, '[pressure]')
+    @ureg.check(None, "[pressure]")
     def stress_surface(self, value):
         if value < Q_(0, "MPa"):
-            raise ValueError("The base allowable surface stress cannot be less"
-                             "than zero.")
+            raise ValueError(
+                "The base allowable surface stress cannot be less" "than zero."
+            )
         self._stress_surface = value
 
     @property
     def stress_edge(self):
-        """The base allowable edge stress as Quantity [pressure].
+        """
+        The base allowable edge stress as Quantity [pressure].
 
         Raises
         ------
@@ -256,16 +274,18 @@ class GlassType:
         return self._stress_edge
 
     @stress_edge.setter
-    @ureg.check(None, '[pressure]')
+    @ureg.check(None, "[pressure]")
     def stress_edge(self, value):
         if value < Q_(0, "MPa"):
-            raise ValueError("The base allowable edge stress cannot be less "
-                             "than zero.")
+            raise ValueError(
+                "The base allowable edge stress cannot be less " "than zero."
+            )
         self._stress_edge = value
 
     @property
     def duration_factor(self):
-        """The duration factor.
+        """
+        The duration factor.
 
         Raises
         ------
@@ -283,7 +303,8 @@ class GlassType:
 
     @property
     def coef_variation(self):
-        """The coefficient of variation.
+        """
+        The coefficient of variation.
         """
 
         return self._coef_variation
@@ -294,7 +315,8 @@ class GlassType:
 
     @property
     def surf_factors(self):
-        """The allowable stress reduction factor for different surface
+        """
+        The allowable stress reduction factor for different surface
         treatments as a dict(string, float)
         """
 
@@ -310,9 +332,18 @@ _glass_type_registry = {}
 _glass_type_abbr = {}
 
 
-def register_glass_type(name, stress_surface, stress_edge, duration_factor,
-                        coef_variation, surf_factors, *, abbr=None):
-    """Register a new glass type.
+def register_glass_type(
+    name,
+    stress_surface,
+    stress_edge,
+    duration_factor,
+    coef_variation,
+    surf_factors,
+    *,
+    abbr=None,
+):
+    """
+    Register a new glass type.
 
     Parameters
     ----------
@@ -342,19 +373,22 @@ def register_glass_type(name, stress_surface, stress_edge, duration_factor,
     """
 
     if name in _glass_type_registry:
-        raise ValueError("Name identifier already in use. "
-                         f"Deregister `{name}` first.")
+        raise ValueError(
+            "Name identifier already in use. " f"Deregister `{name}` first."
+        )
 
     if abbr in _glass_type_abbr:
-        raise ValueError("Abbreviation identifier already in use. "
-                         f"Deregister `{_glass_type_abbr[abbr]}` first.")
+        raise ValueError(
+            "Abbreviation identifier already in use. "
+            f"Deregister `{_glass_type_abbr[abbr]}` first."
+        )
 
     data = {
         "stress_surface": stress_surface,
         "stress_edge": stress_edge,
         "duration_factor": duration_factor,
         "coef_variation": coef_variation,
-        "surf_factors": surf_factors
+        "surf_factors": surf_factors,
     }
 
     _glass_type_registry[name] = data
@@ -363,7 +397,8 @@ def register_glass_type(name, stress_surface, stress_edge, duration_factor,
 
 
 def deregister_glass_type(name):
-    """Deregister an existing glass type.
+    """
+    Deregister an existing glass type.
 
     Parameters
     ----------
@@ -385,7 +420,8 @@ def deregister_glass_type(name):
 
 
 def get_glass_types_data():
-    """Get a deep copy of the registry.
+    """
+    Get a deep copy of the registry.
 
     Returns
     -------
@@ -398,7 +434,8 @@ def get_glass_types_data():
 
 
 def get_abbr_data():
-    """Get a deep copy of the abbreviation map.
+    """
+    Get a deep copy of the abbreviation map.
 
     Returns
     -------
@@ -422,9 +459,9 @@ register_glass_type(
         "None": 1,
         "Fritted": 1,
         "Acid etching": 0.5,
-        "Sandblasting": 0.5
+        "Sandblasting": 0.5,
     },
-    abbr="AN"
+    abbr="AN",
 )
 
 register_glass_type(
@@ -437,9 +474,9 @@ register_glass_type(
         "None": 1,
         "Fritted": 1,
         "Acid etching": 0.5,
-        "Sandblasting": 0.5
+        "Sandblasting": 0.5,
     },
-    abbr="HS"
+    abbr="HS",
 )
 
 register_glass_type(
@@ -452,7 +489,7 @@ register_glass_type(
         "None": 1,
         "Fritted": 1,
         "Acid etching": 0.5,
-        "Sandblasting": 0.5
+        "Sandblasting": 0.5,
     },
-    abbr="FT"
+    abbr="FT",
 )

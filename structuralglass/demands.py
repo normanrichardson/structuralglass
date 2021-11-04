@@ -41,13 +41,15 @@ from .helpers import Roarks4side
 
 
 class IGUWindDemands:
-    """A simplified method for IGU under wind load (short duration).
+    """
+    A simplified method for IGU under wind load (short duration).
     The method uses stiffness based load sharing to distribute the wind load
     and equivalent thickness to determine stress and deflections.
     """
 
     def __init__(self, buildup, wind_load, dim_x, dim_y):
-        """Constructor.
+        """
+        Constructor.
 
         Parameters
         ----------
@@ -85,7 +87,8 @@ class IGUWindDemands:
 
     @property
     def wind_load(self):
-        """The wind load in Quantity [pressure].
+        """
+        The wind load in Quantity [pressure].
         """
 
         return self._wind_load
@@ -97,7 +100,8 @@ class IGUWindDemands:
 
     @property
     def buildup(self):
-        """The buildup as a List[GlassLiteEquiv].
+        """
+        The buildup as a List[GlassLiteEquiv].
         """
 
         return self._buildup
@@ -105,35 +109,42 @@ class IGUWindDemands:
     @buildup.setter
     def buildup(self, value):
         self._buildup = value
-        denom = sum(map(lambda x: x.E*(x.h_efw)**3, self.buildup))
-        self._LSF = dict(zip(
-            self.buildup, map(lambda x: x.E*(x.h_efw)**3/denom, self.buildup)
-        ))
+        denom = sum(map(lambda x: x.E * (x.h_efw) ** 3, self.buildup))
+        self._LSF = dict(
+            zip(
+                self.buildup,
+                map(lambda x: x.E * (x.h_efw) ** 3 / denom, self.buildup),
+            )
+        )
 
     @property
     def stress(self):
-        """The stress as a Dict[GlassPly, Quantity [pressure]]
+        """
+        The stress as a Dict[GlassPly, Quantity [pressure]]
         """
 
         return self._stress
 
     @property
     def deflection(self):
-        """The deflection as a Dict[GlassLiteEquiv, Quantity [pressure]]
+        """
+        The deflection as a Dict[GlassLiteEquiv, Quantity [pressure]]
         """
 
         return self._deflection
 
     @property
     def LSF(self):
-        """The load share factor for each package as a Dict[GlassLiteEquiv, float]
+        """
+        The load share factor for each package as a Dict[GlassLiteEquiv, float]
         """
 
         return self._LSF
 
     @property
     def dim_x(self):
-        """the dim_x as a Quantity['length'].
+        """
+        The dim_x as a Quantity['length'].
 
         Raises
         ------
@@ -144,15 +155,16 @@ class IGUWindDemands:
         return self._dim_x
 
     @dim_x.setter
-    @ureg.check(None, '[length]')
+    @ureg.check(None, "[length]")
     def dim_x(self, value):
-        if value < Q_(0, 'mm'):
+        if value < Q_(0, "mm"):
             raise ValueError("Dimensions must be greater than zero.")
         self._dim_x = value
 
     @property
     def dim_y(self):
-        """The dim_y as a Quantity['length']
+        """
+        The dim_y as a Quantity['length']
 
         Raises
         ------
@@ -163,14 +175,15 @@ class IGUWindDemands:
         return self._dim_y
 
     @dim_y.setter
-    @ureg.check(None, '[length]')
+    @ureg.check(None, "[length]")
     def dim_y(self, value):
-        if value < Q_(0, 'mm'):
+        if value < Q_(0, "mm"):
             raise ValueError("Dimensions must be greater than zero.")
         self._dim_y = value
 
     def solve(self):
-        """Runs the solver.
+        """
+        Runs the solver.
         """
 
         for lite in self.buildup:
