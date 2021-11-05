@@ -1,0 +1,5 @@
+pint
+scipy
+numpy
+Sphinx
+sphinx-rtd-theme

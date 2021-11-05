@@ -29,6 +29,13 @@ This package is by no means complete and could be extended in a variety of ways.
    rst/equiv_thick_models.rst
    rst/demands.rst
 
+Disclaimer
+----------
+
+structuralglass is an open source engineering project. Although efforts have been made to 
+ensure the that relevant engineering theories have been correctly implemented, it remains 
+the user’s responsibility to confirm and accept the output.
+
 Example use
 -----------
 
