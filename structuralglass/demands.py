@@ -42,9 +42,9 @@ from .helpers import Roarks4side
 
 class IGUWindDemands:
     """
-    A simplified method for IGU under wind load (short duration).
-    The method uses stiffness based load sharing to distribute the wind load
-    and equivalent thickness to determine stress and deflections.
+    A simplified method for IGU under wind load (short duration). The method
+    uses stiffness based load sharing to distribute the wind load and
+    equivalent thickness to determine stress and deflections.
     """
 
     def __init__(self, buildup, wind_load, dim_x, dim_y):
@@ -53,13 +53,13 @@ class IGUWindDemands:
 
         Parameters
         ----------
-        buildup : List[GlassLiteEquiv]
+        buildup : :class:`list` (:class:`~structuralglass.equiv_thick_models.GlassLiteEquiv`)
             The buildup.
-        wind_load : Quantity [pressure]
+        wind_load : :class:`~pint.Quantity` [pressure]
             The wind load on the IGU.
-        dim_x : Quantity [length]
+        dim_x : :class:`~pint.Quantity` [length]
             The x-dimensions of the plate.
-        dim_y : Quantity [length]
+        dim_y : :class:`~pint.Quantity` [length]
             The y-dimensions of the plate.
 
         Raises
@@ -88,7 +88,7 @@ class IGUWindDemands:
     @property
     def wind_load(self):
         """
-        The wind load in Quantity [pressure].
+        The wind load in :class:`~pint.Quantity` [pressure].
         """
 
         return self._wind_load
@@ -101,7 +101,8 @@ class IGUWindDemands:
     @property
     def buildup(self):
         """
-        The buildup as a List[GlassLiteEquiv].
+        The buildup as a :class:`list`
+        (:class:`~structuralglass.equiv_thick_models.GlassLiteEquiv`).
         """
 
         return self._buildup
@@ -120,7 +121,9 @@ class IGUWindDemands:
     @property
     def stress(self):
         """
-        The stress as a Dict[GlassPly, Quantity [pressure]]
+        The stress as a :class:`dict`
+        (:class:`~structuralglass.layers.GlassPly`,
+        :class:`~pint.Quantity` [pressure])
         """
 
         return self._stress
@@ -128,7 +131,9 @@ class IGUWindDemands:
     @property
     def deflection(self):
         """
-        The deflection as a Dict[GlassLiteEquiv, Quantity [pressure]]
+        The deflection as a :class:`dict`
+        (:class:`~structuralglass.equiv_thick_models.GlassLiteEquiv`,
+        :class:`~pint.Quantity` [pressure])
         """
 
         return self._deflection
@@ -136,7 +141,9 @@ class IGUWindDemands:
     @property
     def LSF(self):
         """
-        The load share factor for each package as a Dict[GlassLiteEquiv, float]
+        The load share factor for each package as a :class:`dict`
+        (:class:`~structuralglass.equiv_thick_models.GlassLiteEquiv`,
+        :class:`float`)
         """
 
         return self._LSF
@@ -144,7 +151,7 @@ class IGUWindDemands:
     @property
     def dim_x(self):
         """
-        The dim_x as a Quantity['length'].
+        The dim_x as a :class:`~pint.Quantity` ['length'].
 
         Raises
         ------
@@ -164,7 +171,7 @@ class IGUWindDemands:
     @property
     def dim_y(self):
         """
-        The dim_y as a Quantity['length']
+        The dim_y as a :class:`~pint.Quantity` ['length']
 
         Raises
         ------

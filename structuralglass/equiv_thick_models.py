@@ -77,17 +77,20 @@ class GlassLiteEquiv:
 
         Parameters
         ----------
-        ply : ply (List[GlassPly and/or Interlayer])
+        ply : :class:`list` (:class:`~structuralglass.layers.GlassPly` and/or :class:`~structuralglass.layers.Interlayer`)
             The list of glass layers and interlayers that form a laminate.
         """
         self._h_efw = None
-        """Dict[ply, Quantity [length]]: Private attribute for the effective
-           thickness for displacement."""
+        """:class:`dict` (:class:`~structuralglass.layers.GlassPly`,
+            :class:`~pint.Quantity` [length]): Private attribute for the
+            effective thickness for displacement."""
         self._h_efs = None
-        """Dict[ply, Quantity [length]]: Private attribute for the effective
-           thickness for stress"""
+        """:class:`dict` (:class:`~structuralglass.layers.GlassPly`,
+           :class:`~pint.Quantity` [length]): Private attribute for the
+           effective thickness for stress"""
         self._E = None
-        """Float: Private attribute for the packages elastic modulus"""
+        """:class:`~pint.Quantity` [pressure]: Private attribute for the
+        packages elastic modulus"""
         self.ply = ply
 
     @abc.abstractmethod
@@ -103,11 +106,11 @@ class GlassLiteEquiv:
 
         Parameters
         ----------
-        plys : List[GlassPly and Interlayer (optional)]
+        plys : :class:`list` (:class:`~structuralglass.layers.GlassPly` and/or :class:`~structuralglass.layers.Interlayer`)
 
         Returns
         -------
-        Tuple (bool, msg)
+        (:class:`bool`, :class:`str`)
             True for a valid formulation. A mesage for an error.
         """
 
@@ -125,7 +128,7 @@ class GlassLiteEquiv:
     def h_efw(self):
         """
         The equivalent laminate thickness for displacement as a
-        Quantity [length]
+        :class:`~pint.Quantity` [length]
         """
 
         return self._h_efw
@@ -134,7 +137,8 @@ class GlassLiteEquiv:
     def h_efs(self):
         """
         The equivalent laminate thickness for the stress in the associated
-        plys as a Dict[GlassPly, Quantity [length]]
+        plys as a :class:`dict` (:class:`~structuralglass.layers.GlassPly`,
+        :class:`~pint.Quantity` [length])
         """
 
         return self._h_efs
@@ -143,7 +147,8 @@ class GlassLiteEquiv:
     def ply(self):
         """
         A list of glass layers and interlayers that form a laminate as a
-        List[GlassPly and/or Interlayer]
+        :class:`list` (:class:`~structuralglass.layers.GlassPly`
+        and/or :class:`~structuralglass.layers.Interlayer`)
 
         Raises
         ------
@@ -156,7 +161,8 @@ class GlassLiteEquiv:
     @property
     def E(self):
         """
-        The elastic modulus for the formulation as a Quantity [pressure]
+        The elastic modulus for the formulation as a
+        :class:`~pint.Quantity` [pressure]
         """
 
         return self._E
@@ -185,7 +191,7 @@ class MonolithicMethod(GlassLiteEquiv):
 
         Parameters
         ----------
-        plys : List[GlassPly]
+        plys : :class:`list` (:class:`~structuralglass.layers.GlassPly`)
             The list of glass layers that form a laminate.
         """
 
@@ -208,7 +214,8 @@ class MonolithicMethod(GlassLiteEquiv):
         Assign the elastic modulus for the formulation.
 
         As the validation function is already checks the elastic modulus
-        of all GlassPly are the same, take the 1st plys elastic modulus.
+        of all :class:`~structuralglass.layers.GlassPly` are the same, take
+        the 1st plys elastic modulus.
         """
 
         self._E = self.ply[0].E
@@ -217,16 +224,18 @@ class MonolithicMethod(GlassLiteEquiv):
         """
         Validate the data in the plys.
 
-        1. Checks the list is only contains type GlassPly.
-        2. Checks the elastic modulus of all GlassPly are the same.
+        1. Checks the list is only contains type
+           :class:`~structuralglass.layers.GlassPly`.
+        2. Checks the elastic modulus of all
+           :class:`~structuralglass.layers.GlassPly` are the same.
 
         Parameters
         ----------
-        plys : List
+        plys : :class:`list` (:class:`~structuralglass.layers.GlassPly`)
 
         Returns
         -------
-        Tuple (bool, str)
+        (:class:`bool`, :class:`str`)
             True for a valid formulation. A mesage for an error.
         """
 
@@ -259,7 +268,7 @@ class NonCompositeMethod(GlassLiteEquiv):
 
         Parameters
         ----------
-        plys : List[GlassPly]
+        plys : :class:`list` (:class:`~structuralglass.layers.GlassPly`)
             The list of glass layers that form a laminate.
         """
 
@@ -289,7 +298,8 @@ class NonCompositeMethod(GlassLiteEquiv):
         """Elastic modulus for the formulation.
 
         As the validation function is already checks the elastic modulus
-        of all GlassPly are the same, take the 1st plys elastic modulus.
+        of all :class:`~structuralglass.layers.GlassPly` are the same, take
+        the 1st plys elastic modulus.
         """
 
         self._E = self.ply[0].E
@@ -298,16 +308,18 @@ class NonCompositeMethod(GlassLiteEquiv):
         """
         Method that validates the data in the plys.
 
-        1. Checks the list is only contains type GlassPly
-        2. Checks the elastic modulus of all GlassPly are the same.
+        1. Checks the list is only contains type
+           :class:`~structuralglass.layers.GlassPly`
+        2. Checks the elastic modulus of all
+           :class:`~structuralglass.layers.GlassPly` are the same.
 
         Parameters
         ----------
-        plys : List
+        plys : :class:`list` (:class:`~structuralglass.layers.GlassPly`)
 
         Returns
         -------
-        Tuple (bool, str)
+        (:class:`bool`, :class:`str`)
             True for a valid formulation. A mesage for an error.
         """
 
@@ -337,9 +349,9 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
 
         Parameters
         ----------
-        plys : List[GlassPly and Interlayer]
+        plys : :class:`list` (:class:`~structuralglass.layers.GlassPly` and :class:`~structuralglass.layers.Interlayer`)
             The list of glass layers and Interlayers that form a laminate.
-        panel_min_dim : Quantity [length]
+        panel_min_dim : :class:`~pint.Quantity` [length]
             Minimum dimension of the rectangular panel
         """
 
@@ -351,18 +363,21 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         """
         Validate the data in the plys.
 
-         1. This formulation is only valid for plys with that are [GlassPly,
-            Interlayer, GlassPly].
-         2. The GlassPly's must have the same elastic modulus.
+         1. This formulation is only valid for plys with that are
+            [:class:`~structuralglass.layers.GlassPly`,
+            :class:`~structuralglass.layers.Interlayer`,
+            :class:`~structuralglass.layers.GlassPly`].
+         2. The :class:`~structuralglass.layers.GlassPly`'s must have the same
+            elastic modulus.
 
         Parameters
         ----------
-        plys : List
+        plys : :class:`list` (:class:`~structuralglass.layers.GlassPly` and :class:`~structuralglass.layers.Interlayer`)
             The list to be validated.
 
         Returns
         -------
-        Tuple (bool, str)
+        (:class:`bool`, :class:`str`)
             True for a valid formulation. A mesage for an error.
         """
 
@@ -423,7 +438,8 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
         """
         Method to determine the elastic modulus for the formulation.
         As the validation function is already checks the elastic modulus
-        of all GlassPly are the same, take the 1st plys elastic modulus.
+        of all :class:`~structuralglass.layers.GlassPly` are the same, take
+        the 1st plys elastic modulus.
         """
 
         self._E = self.ply[0].E
@@ -436,7 +452,7 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
 
         Returns
         -------
-        float
+        :class:`float`
         """
 
         return self._beta
@@ -452,7 +468,7 @@ class ShearTransferCoefMethod(GlassLiteEquiv):
 
         Returns
         -------
-        Quantity [length]
+        :class:`~pint.Quantity` [length]
 
         Raises
         ------

@@ -15,13 +15,13 @@ class Roarks4side:
 
         Parameters
         ----------
-        dim_x: Quantity['length']
+        dim_x: :class:`~pint.Quantity` ['length']
             The x dimension of the plate.
-        dim_y: Quantity['length']
+        dim_y: :class:`~pint.Quantity` ['length']
             The y dimension of the plate.
-        E: Quantity['pressure']
+        E: :class:`~pint.Quantity` ['pressure']
             The elastic modulus of the plate.
-        t: Quantity['length'], optional
+        t: :class:`~pint.Quantity` ['length'], optional
             The plate thickness. The default is 1 inch.
         """
 
@@ -81,12 +81,12 @@ class Roarks4side:
 
         Parameters
         ----------
-        q : Quantity['pressure']
+        q : :class:`~pint.Quantity` ['pressure']
             The uniform load on the plate.
 
         Returns
         -------
-        Quantity['pressure']
+        :class:`~pint.Quantity` ['pressure']
             The plates max stress.
         """
 
@@ -100,12 +100,12 @@ class Roarks4side:
 
         Parameters
         ----------
-        q : Quantity['pressure']
+        q : :class:`~pint.Quantity` ['pressure']
             The uniform load on the plate.
 
         Returns
         -------
-        Quantity['length']
+        :class:`~pint.Quantity` ['length']
             The plates max deflection.
         """
 
@@ -129,7 +129,7 @@ class Roarks4side:
 
         Returns
         -------
-        Quantity['force_per_unit_length']
+        :class:`~pint.Quantity` ['force_per_unit_length']
             The plates max reaction force.
         """
 
@@ -146,7 +146,7 @@ class Roarks4side:
     @property
     def dim_x(self):
         """
-        Get the x dimension of the plate in Quantity['length']
+        Get the x dimension of the plate in :class:`~pint.Quantity` ['length']
 
         Raises
         ------
@@ -168,7 +168,7 @@ class Roarks4side:
     @property
     def dim_y(self):
         """
-        The y dimension of the plate in Quantity['length']
+        The y dimension of the plate in :class:`~pint.Quantity` ['length']
 
         Raises
         ------
@@ -190,7 +190,7 @@ class Roarks4side:
     @property
     def t(self):
         """
-        The thickness of the plate in Quantity['length'].
+        The thickness of the plate in :class:`~pint.Quantity` ['length'].
 
         Raises
         ------
@@ -210,7 +210,8 @@ class Roarks4side:
     @property
     def E(self):
         """
-        The elastic modulus of the plate in Quantity['pressure']
+        The elastic modulus of the plate in
+        :class:`~pint.Quantity` ['pressure'].
 
         Raises
         ------

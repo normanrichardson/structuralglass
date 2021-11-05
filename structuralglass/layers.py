@@ -27,8 +27,8 @@ thickness". Each nominal thickness has an associated min required thickness
     ply.t_min  # Q_(5.56, "mm")
 
 
-:class:`~structuralglass.layers.GlassPly` created in this way will have
-properties for `t_nom` that are not None.
+:class:`~GlassPly` created in this way will have properties for
+:attr:`~GlassPly.t_nom` that are not None.
 
 In order to not limit the user to nominal thicknesses, a :class:`~GlassPly`
 can be created using :meth:`~GlassPly.from_actual_thickness`::
@@ -59,7 +59,7 @@ method.
     from structuralglass import Q_
     import structuralglass.layers as lay
 
-    # Interlayer PVB at 30degC for 1 day load duration
+    # Interlayer PVB at 30°C for 1 day load duration
     G_pvb = Q_(0.281, "MPa")
     t_pvb = Q_(0.89, "mm")
     interlayer = lay.Interlayer.from_static(t_pvb, G_pvb)
@@ -73,11 +73,11 @@ temperature.
 Dynamic :class:`~Interlayer` are backed by manufactures tabular data. They are
 dynamic in the sense that the shear modulus can be changed by providing a new
 temperature and load duration. For gaps in the manufactures data (for example,
-the shear modulus is given for 10degC and 20degC and 15degC is set), the
-tabular data is interpolated linearly. Extrapolation is not done and capped to
-tabulated values. This functionality is provided by scipy's interp2d function.
-A dynamic :class:`~Interlayer` can be created via the
-:meth:`~Interlayer.from_product_table` class method.
+the shear modulus is given for 10°C and 20°C and 15°C is set), the tabular
+data is interpolated linearly. Extrapolation is not done and capped to
+tabulated values. This functionality is provided by scipy's
+:class:`~scipy.interpolate.interp2d` function. A dynamic :class:`~Interlayer`
+can be created via the :meth:`~Interlayer.from_product_table` class method.
 
 ::
 
@@ -187,19 +187,20 @@ class GlassPly:
 
         Parameters
         ----------
-        t_min : ``Quantity [length]``
+        t_min : :class:`~pint.Quantity` [length]
             Min allowable thickness.
-        t_nom : ``Quantity [length], optional``
+        t_nom : :class:`~pint.Quantity` [length], optional
             Nominal thickness, by default None (if using actual thickness)
-        E : ``Quantity [pressure], optional``
+        E : :class:`~pint.Quantity` [pressure], optional
             Elastic modulus, by default 71.7GPa
 
         Raises
         ------
         pint.DimensionalityError
-            If an input argument does not meet the ``Quantity`` requirement.
+            If an input parameters do not meet the :class:`~pint.Quantity`
+            requirement.
         TypeError
-            The provided nominal thickness is not a ``Quanity['length']`` or
+            The provided nominal thickness is not a :class:`~pint.Quantity` or
             None.
         ValueError
             Actual thickness/elastic modulus/nominal thickness cannot be less
@@ -233,16 +234,16 @@ class GlassPly:
     @ureg.check(None, "[length]")
     def from_nominal_thickness(cls, t_nom):
         """
-        Class method to creating a GlassPly with a nominal thickness.
+        Class method to creating a :class:`GlassPly` with a nominal thickness.
 
         Parameters
         ----------
-        t_nom : ``Quantity [length]``
+        t_nom : :class:`~pint.Quantity` [length]
             Nominal thickness.
 
         Returns
         -------
-        GlassPly
+        :class:`GlassPly`
         """
 
         t_min = cls._find_min_from_nom(t_nom)
@@ -252,16 +253,16 @@ class GlassPly:
     @ureg.check(None, "[length]")
     def from_actual_thickness(cls, t_act):
         """
-        Class method to creating a GlassPly with an actual thickness.
+        Class method to creating a :class:`GlassPly` with an actual thickness.
 
         Parameters
         ----------
-        t_act : ``Quantity [length]``
+        t_act : :class:`~pint.Quantity` [length]
             Actual thickness.
 
         Returns
         -------
-        GlassPly
+        :class:`GlassPly`
         """
 
         return cls(t_act)
@@ -283,7 +284,7 @@ class GlassPly:
     @property
     def E(self):
         """
-        The elastic modulus as ``Quantity [pressure]``
+        The elastic modulus as :class:`~pint.Quantity` [pressure].
 
         Raises
         ------
@@ -303,7 +304,7 @@ class GlassPly:
     @property
     def t_nom(self):
         """
-        The nominal thickness as ``Quantity [length]``
+        The nominal thickness as :class:`~pint.Quantity` [length]
 
         Raises
         ------
@@ -324,7 +325,7 @@ class GlassPly:
     @property
     def t_min(self):
         """
-        The minimum thickness as ``Quantity [length]``
+        The minimum thickness as :class:`~pint.Quantity` [length].
 
         Raises
         ------
@@ -345,7 +346,7 @@ class GlassPly:
 
 class Interlayer:
     """
-    A class to represent a glass interlayer(e.g. PVB or SG), and its
+    A class to represent a glass interlayer (e.g. PVB or SG), and its
     mechanical properties. Rate dependent properties can be considered via the
     use of a product table or registered product name.
     """
@@ -356,15 +357,17 @@ class Interlayer:
 
         Parameters
         ----------
-        t : ``Quantity [length]``
+        t : :class:`~pint.Quantity` [length]
             Interlayer thickness.
-        G : ``Quantity [pressure]``
+        G : :class:`~pint.Quantity` [pressure]
             Shear modulus for the case of a static layer, do not provide a
             G_table.
-        G_table: ``{Tuple(Quantity [temp], Quantity [time]), Quantity [pres]}``
+        G_table: :class:`dict` ((:class:`~pint.Quantity`, :class:`~pint.Quantity`): :class:`~pint.Quantity`)
             Shear modulus table for the case of using an interlayer product
-            table. The dictionary keys are (temperature, duration) and
-            associated shear modulus. Do not provide a G value.
+            table. The keys of the dict are tuples of units [temperature] and
+            [time] for the interlayer temperature and load duration,
+            respectively. The values of the dict are of units [pressure] for
+            the shear modulus. Do not provide a G value.
 
         Raises
         ------
@@ -384,7 +387,7 @@ class Interlayer:
             self._temperature = None
             self._duration = None
             # Create a function that does the interpolation for the product
-            # table. Get the unique values for tempereture in the table in degC
+            # table. Get the unique values for tempereture in the table in °C
             val_x = (ii[0].m_as("degC") for ii in self.G_table.keys())
             G_table_x = np.sort(np.array(list(set(val_x))))
             # Get the unique values for duration in the table in sec
@@ -417,18 +420,18 @@ class Interlayer:
     @ureg.check(None, "[length]", None)
     def from_product_table(cls, t, product_name):
         """
-        Class method for an interlayer with a product table.
+        Class method for an :class:`Interlayer` with a product table.
 
         Parameters
         ----------
-        t : ``Quantity [length]``
+        t : :class:`~pint.Quantity` [length]
             The thickness of the interlayer.
         product_name : ``string``
             The registred name of the product.
 
         Returns
         -------
-        Interlayer
+        :class:`Interlayer`
         """
 
         if not (t > Q_(0, "mm")):
@@ -446,18 +449,18 @@ class Interlayer:
     @ureg.check(None, "[length]", "[pressure]")
     def from_static(cls, t, G):
         """
-        Class method for an interlayer with a static shear modulus.
+        Class method for an :class:`Interlayer` with a static shear modulus.
 
         Parameters
         ----------
-        t : ``Quantity [length]``
+        t : :class:`~pint.Quantity` [length]
             The thickness of the interlayer.
-        G : ``Quantity [pressure]``
+        G : :class:`~pint.Quantity` [pressure]
             The shear modulus.
 
         Returns
         -------
-        Interlayer
+        :class:`Interlayer`
         """
 
         if not (t > Q_(0, "mm")):
@@ -473,7 +476,7 @@ class Interlayer:
     @property
     def temperature(self):
         """
-        The temperature as ``Quantity [temperature]``.
+        The temperature as :class:`~pint.Quantity` [temperature].
 
         Raises
         ------
@@ -499,7 +502,7 @@ class Interlayer:
     @property
     def duration(self):
         """
-        The duration as ``Quantity [time]``.
+        The duration as :class:`~pint.Quantity` [time].
 
         Raises
         ------
@@ -525,8 +528,8 @@ class Interlayer:
     @property
     def G(self):
         """
-        The shear modulus as ``Quantity [pressure]``. Interpolates linearly
-        within the domain of the provided table.
+        The shear modulus as :class:`~pint.Quantity` [pressure]. Interpolates
+        linearly within the domain of the provided table.
 
         Raises
         ------
@@ -557,11 +560,12 @@ def register_interlayer_product(product_name, data):
 
     Parameters
     ----------
-    product_name : ``string``
+    product_name : :class:`str`
         String identifier
-    data : ``{Tuple(Quantity [temp], Quantity [time]), Quantity [pres]}``
+    data : :class:`dict` ((:class:`~pint.Quantity`, :class:`~pint.Quantity`): :class:`~pint.Quantity`)
         The tabulated data of the shear modulus that depends on temperature
-        and load duration.
+        and load duration. The keys of the dict are tuples of units [temp] and
+        [time]. The of the dict are of units [pressure]
 
     Raises
     ------
@@ -586,8 +590,8 @@ def deregister_interlayer_product(product_name):
 
     Parameters
     ----------
-    product_name : ``string``
-        String identifier
+    product_name : :class:`str`
+        Identifier
     """
 
     _interLayer_registry.pop(product_name, None)

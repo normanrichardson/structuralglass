@@ -89,17 +89,17 @@ class GlassType:
 
         Parameters
         ----------
-            stress_surface : Quantity [pressure] i.e. [stress]
+            stress_surface : :class:`~pint.Quantity` [pressure] i.e. [stress]
                 The base allowable surface stress for the glass type.
-            stress_edge : Quantity [pressure] i.e. [stress]
+            stress_edge : :class:`~pint.Quantity` [pressure] i.e. [stress]
                 The base allowable edge stress for the glass type.
-            duration_factor : float
+            duration_factor : :class:`float`
                 The duration factor for the glass type.
-            surf_factors : dict(string, float)
+            surf_factors : :class:`dict` (:class:`str`, :class:`float`)
                 The allowable stress reduction factor for different surface
                 treatments. e.g. "Acid etching" can reduce the allowable
                 stress by 0.5.
-            coef_variation  : float, optional
+            coef_variation  : :class:`float`, optional
                 The coefficient of variation for the glass type.
                 This factor describes the statistical behavior of the failure
                 stress. By default 0.2.
@@ -114,22 +114,22 @@ class GlassType:
     @classmethod
     def from_name(cls, name):
         """
-        Class method to creating a GlassType from a string identifier held
-        in the registry.
+        Class method to creating a GlassType from an identifier held in the
+        registry.
 
         Parameters
         ----------
-        name : ``string``
-            String identifier.
+        name : :class:`str`
+            Identifier.
 
         Returns
         -------
-        GlassType
+        :class:`GlassType`
 
         Raises
         ------
         ValueError
-            When the registry does not contain the string identifier.
+            When the registry does not contain the identifier.
         """
 
         if name in _glass_type_registry:
@@ -142,22 +142,22 @@ class GlassType:
     @classmethod
     def from_abbr(cls, abbr):
         """
-        Class method to creating a GlassType from a string abbreviation
-        held in the registry.
+        Class method to creating a GlassType from an abbreviation held in the
+        registry.
 
         Parameters
         ----------
-        name : ``string``
-            String abbreviation.
+        name : :class:`str`
+            Abbreviation.
 
         Returns
         -------
-        GlassType
+        :class:`GlassType`
 
         Raises
         ------
         ValueError
-            When the registry does not contain the string abbreviation.
+            When the registry does not contain the abbreviation.
         """
 
         if abbr in _glass_type_abbr:
@@ -174,11 +174,11 @@ class GlassType:
 
         Parameters
         ----------
-        time : Quantity [time], optional
+        time : :class:`~pint.Quantity` [time], optional
             The load duration, by default 3*ureg.sec
         Returns
         -------
-        float
+        :class:`float`
             Load duration factor to apply to the base stress.
         """
 
@@ -192,12 +192,12 @@ class GlassType:
 
         Parameters
         ----------
-        ratio : float
+        ratio : :class:`float`
             Failure ratio. E.g. 1/1000, 8/1000
 
         Returns
         -------
-        float
+        :class:`float`
             The design factor for the glass type.
         """
 
@@ -210,12 +210,12 @@ class GlassType:
 
         Parameters
         ----------
-        ratio : float
+        ratio : :class:`float`
             Failure ratio. E.g. 1/1000, 8/1000
 
         Returns
         -------
-        float
+        :class:`float`
             Probability of breakage factor to apply to the base stress.
         """
 
@@ -227,12 +227,12 @@ class GlassType:
 
         Parameters
         ----------
-        surf_treat : string
+        surf_treat : :class:`str`
             Looks up the factor for the surface treatment.
 
         Returns
         -------
-        float
+        :class:`float`
             Surface treatment factor to apply to the base stress.
         """
 
@@ -241,7 +241,8 @@ class GlassType:
     @property
     def stress_surface(self):
         """
-        The base allowable surface stress in Quantity [pressure].
+        The base allowable surface stress in
+        :class:`~pint.Quantity` [pressure].
 
         Raises
         ------
@@ -263,7 +264,7 @@ class GlassType:
     @property
     def stress_edge(self):
         """
-        The base allowable edge stress as Quantity [pressure].
+        The base allowable edge stress as :class:`~pint.Quantity` [pressure].
 
         Raises
         ------
@@ -317,7 +318,7 @@ class GlassType:
     def surf_factors(self):
         """
         The allowable stress reduction factor for different surface
-        treatments as a dict(string, float)
+        treatments as a :class:`dict` of {:class:`str`: :class:`float`}
         """
 
         return self._surf_factors
@@ -347,21 +348,21 @@ def register_glass_type(
 
     Parameters
     ----------
-    name : string
+    name : :class:`str`
         Identifier
-    stress_surface : Quantity [pressure] i.e. [stress]
+    stress_surface : :class:`~pint.Quantity` [pressure] i.e. [stress]
         The base allowable surface stress for the glass type.
-    stress_edge : Quantity [pressure] i.e. [stress]
+    stress_edge : :class:`~pint.Quantity` [pressure] i.e. [stress]
         The base allowable edge stress for the glass type.
-    duration_factor : float
+    duration_factor : :class:`float`
         The duration factor for the glass type.
-    coef_variation  : float, optional
+    coef_variation  : :class:`float`, optional
         The coefficient of variation for the glass type. This factor describes
         the statistical behavior of the failure stress.
-    surf_factors : dict(string, float)
+    surf_factors : :class:`dict` (:class:`str`, :class:`float`)
         The allowable stress reduction factor for different surface treatments.
         e.g. "Acid etching" can reduce the allowable stress by 0.5
-    abbr : string, optional
+    abbr : :class:`str`, optional
         Abbreviation, by default None
 
     Raises
@@ -402,8 +403,8 @@ def deregister_glass_type(name):
 
     Parameters
     ----------
-    name : ``string``
-        String identifier
+    name : :class:`str`
+        Identifier
     """
 
     key_list = list(_glass_type_abbr.keys())
@@ -425,9 +426,9 @@ def get_glass_types_data():
 
     Returns
     -------
-    Dict(string, values)
-        A dictionary of all the GlassType parameters, the keys are the string
-        identifiers.
+    :class:`dict` (:class:`str`, :class:`dict`)
+        A dictionary of all the GlassType parameters (as :class:`dict`), the
+        keys are the identifiers.
     """
 
     return copy.deepcopy(_glass_type_registry)
@@ -439,9 +440,8 @@ def get_abbr_data():
 
     Returns
     -------
-    Dict(string, string)
-        A dictionary of the string identifiers, the keys are the string
-        abbreviation.
+    :class:`dict` (:class:`str`, :class:`str`)
+        A dictionary of the identifiers, the keys are the abbreviation.
     """
 
     return copy.deepcopy(_glass_type_registry)
