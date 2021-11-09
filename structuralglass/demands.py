@@ -29,7 +29,7 @@ In general, more sophisticated models are required.
     buildup = [package1, package2]
 
     # Panel
-    panel = dem.IGUWindDemands(buildup, wind_load, dim_x=a , dim_y=b)
+    panel = dem.IGUWindDemands(buildup, wind_load, dim_x=a, dim_y=b)
     panel.solve()
 
     panel.deflection[package1]      # Q_(-0.47, "in")

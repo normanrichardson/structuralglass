@@ -1,9 +1,9 @@
-Contributing
-------------
-The code repository is hosted on `GitHub <https://github.com/normanrichardson/StructGlassCalcs>`_.
+How to Contribute
+-----------------
+The code repository is hosted on `GitHub <https://github.com/normanrichardson/structuralglass>`_.
 To contribute fixes, code, or documentation, fork the repository and submit changes using a pull request against the master branch.
 
-Set up your environment
+Set Up Your Environment
 =======================
 We recommend developing within a virtual environment.
 The following installation is recommended within the virtual environment:
@@ -14,7 +14,7 @@ The following installation is recommended within the virtual environment:
     $ cd structuralglass
     $ pip install -e .[dev]
 
-Using the `dev` option will add additional dependencies for development, such as Sphinx, flake8, etc.
+Using the `dev` option will add additional dependencies for development, such as Sphinx, flake8, black, and isort.
 
 If distribution dependencies are needed add the `dist` option:
 

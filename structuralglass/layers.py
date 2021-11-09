@@ -88,12 +88,12 @@ can be created via the :meth:`~Interlayer.from_product_table` class method.
     product_name = "Ionoplast Interlayer NCSEA"
     interlayer = lay.Interlayer.from_product_table(t_pvb, product_name)
 
-    #set the load duration and temperature
-    interlayer.duration = Q_(1,"month")
-    interlayer.temperature = Q_(40,"degC")
+    # set the load duration and temperature
+    interlayer.duration = Q_(1, "month")
+    interlayer.temperature = Q_(40, "degC")
 
     # Access the shear modulus of the "Ionoplast Interlayer NCSEA"
-    interlayer.G    #Q_(3.29, "MPa")
+    interlayer.G    # Q_(3.29, "MPa")
 
 A background registry holds the manufactures tabular data.
 New data can be added via the :func:`~register_interlayer_product` function.
@@ -106,13 +106,13 @@ Data can be removed via the :func:`~deregister_interlayer_product` function.
 
     name = "product_ID_1"
     data = {
-        (Q_(20,"degC"), Q_(3,'sec')) : Q_(240, "MPa"),
-        (Q_(30,"degC"), Q_(3,'sec')) : Q_(217, "MPa"),
-        (Q_(40,"degC"), Q_(3,'sec')) : Q_(151, "MPa"),
+        (Q_(20, "degC"), Q_(3, 'sec')): Q_(240, "MPa"),
+        (Q_(30, "degC"), Q_(3, 'sec')): Q_(217, "MPa"),
+        (Q_(40, "degC"), Q_(3, 'sec')): Q_(151, "MPa"),
 
-        (Q_(20,"degC"), Q_(10,'min')) : Q_(77.0, "MPa"),
-        (Q_(30,"degC"), Q_(10,'min')) : Q_(36.2, "MPa"),
-        (Q_(40,"degC"), Q_(10,'min')) : Q_(11.8, "MPa"),
+        (Q_(20, "degC"), Q_(10, 'min')): Q_(77.0, "MPa"),
+        (Q_(30, "degC"), Q_(10, 'min')): Q_(36.2, "MPa"),
+        (Q_(40, "degC"), Q_(10, 'min')): Q_(11.8, "MPa"),
     }
     lay.register_interlayer_product(name, data)
 
@@ -121,10 +121,10 @@ Data can be removed via the :func:`~deregister_interlayer_product` function.
     interlayer = lay.Interlayer.from_product_table(t_pvb, name)
 
     # set the load duration and temperature
-    interlayer.duration = Q_(5,"min")
-    interlayer.temperature = Q_(35,"degC")
+    interlayer.duration = Q_(5, "min")
+    interlayer.temperature = Q_(35, "degC")
 
-    interlayer.G    #Q(104.15, "MPa")
+    interlayer.G    # Q(104.15, "MPa")
 
 """
 

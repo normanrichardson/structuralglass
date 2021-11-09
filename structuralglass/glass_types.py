@@ -25,13 +25,13 @@ using the :meth:`~structuralglass.glass_types.GlassType.from_name` and
     ft = gt.GlassType.from_name("Fully Tempered")
     allow_stress_ft = ft.prob_breakage_factor(1/1000) \\
         * ft.load_duration_factor(Q_(3, "sec")) \\
-        * ft.surf_treat_factor("None") * ft.stress_edge     #Q(66.448, "MPa")
+        * ft.surf_treat_factor("None") * ft.stress_edge     # Q_(66.448, "MPa")
 
     # Allowable stress AN
     an = gt.GlassType.from_abbr("AN")
     allow_stress_an = an.prob_breakage_factor(1/1000) \\
         * ft.load_duration_factor(Q_(3, "sec")) \\
-        * ft.surf_treat_factor("None") * ft.stress_edge     #Q(12.464, "MPa")
+        * ft.surf_treat_factor("None") * ft.stress_edge     # Q_(12.464, "MPa")
 
 A background registry holds the glass type parameters.
 New glass type parameters can be added via the :func:`~register_glass_type`
@@ -44,15 +44,15 @@ function.
 
     gt.register_glass_type(
         name="My Fully Tempered",
-        stress_surface = Q_(93.1, "MPa"),
-        stress_edge    = Q_(73.0, "MPa"),
-        duration_factor = 47.5,
-        coef_variation = 0.2,
-        surf_factors = {
-            "None" : 1,
-            "Fritted" : 1,
-            "Acid etching" : 0.5,
-            "Sandblasting" : 0.5
+        stress_surface=Q_(93.1, "MPa"),
+        stress_edge=Q_(73.0, "MPa"),
+        duration_factor=47.5,
+        coef_variation=0.2,
+        surf_factors={
+            "None": 1,
+            "Fritted": 1,
+            "Acid etching": 0.5,
+            "Sandblasting": 0.5
         },
         abbr="MyFT"
     )
