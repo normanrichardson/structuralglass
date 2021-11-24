@@ -5,7 +5,9 @@ The package provides a collection of utilities that a designer will find useful 
 At present, it focuses on methods in the Engineering Structural Glass Design Guide by NCSEA (National Council of Structural Engineers Associations) and ASTM E1300.
 
 # Installation
-> pip install structuralglass
+```
+$ pip install structuralglass
+```
 
 # Documentation
 Find the documentation [here](https://structuralglass.readthedocs.io/en/latest/).
@@ -51,11 +53,16 @@ The only demand method is for the application of face loading on four-side suppo
 # Contributions
 1. Fork and clone to a local working directory
 2. Setup a virtual environment
-> python -m venv .venv
-
-> source env/bin/activate
+```
+$ python -m venv .venv
+$ source .venv/bin/activate
+```
 3. Install in editable mode
-> pip install -e .[dev]
+```
+$ pip install -e .[dev]
+```
 
 4. Testing
-> python -m unittest test.unittests
+```
+$ python -m unittest test.unittests
+```
